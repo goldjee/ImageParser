@@ -124,7 +124,7 @@ public class FileIO {
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();
 
-            ImageIO.write(image, "jpg", out);
+            ImageIO.write(image, getFileExtension(out), out);
         } catch (IOException e) {
             e.printStackTrace();
         }
