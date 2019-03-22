@@ -18,19 +18,9 @@ public class Core {
 
     }
 
-    public void balance() {
-        System.out.println("Balancing started");
-        pairs = buildPairs();
-        if (pairs.size() > 0) {
-            balancer.balance(pairs);
-        }
-
-        System.out.println("Balancing done");
-    }
-
     public void crop() {
         System.out.println("Cropping started");
-        pairs = buildPairs();
+        pairs = buildPairs(true);
 
         for (Pair<File, File> pair : pairs) {
             Cropper cropper = new Cropper(fileIO);
@@ -41,10 +31,33 @@ public class Core {
         System.out.println("Cropping done");
     }
 
-    private List<Pair<File, File>> buildPairs() {
+    public void balance() {
+        System.out.println("Balancing started");
+
+        // we'll try to balance dataset in processed dir
+        pairs = buildPairs(false);
+
+        if (pairs.size() > 0) {
+            balancer.balance(pairs, false);
+        }
+        else {
+            // if it's empty, okay. we'll try input dir
+            pairs = buildPairs(true);
+            // and copy results to output btw
+            balancer.balance(pairs, true);
+        }
+
+        System.out.println("Balancing done");
+    }
+
+    public void cleanup() {
+        fileIO.cleanup();
+    }
+
+    private List<Pair<File, File>> buildPairs(boolean inputDir) {
         List<Pair<File, File>> pairs = new ArrayList<>();
 
-        List<File> dirContents = fileIO.list();
+        List<File> dirContents = fileIO.list(inputDir);
         List<File> txts = fileIO.filterExtension(dirContents, "txt", true);
         List<File> imgs = fileIO.filterExtension(dirContents, "txt", false);
 

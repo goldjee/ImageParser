@@ -18,11 +18,14 @@ public class ImageParser {
 
         Core core = new Core();
 
-        if (balance)
-            core.balance();
+        // clean dirs before start
+        core.cleanup();
 
         if (crop)
             core.crop();
+
+        if (balance)
+            core.balance();
 
         System.out.println("Jobs done");
     }

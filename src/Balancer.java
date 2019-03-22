@@ -19,15 +19,19 @@ public class Balancer {
         this.fileIO = fileIO;
     }
 
-    public void balance(List<Pair<File, File>> pairs) {
+    public void balance(List<Pair<File, File>> pairs, boolean fromInput) {
         List<Pair<File, File>> backgrounds = new ArrayList<>();
 
+        // remains are pairs which should be preserved
+        List<Pair<File, File>> remains = new ArrayList<>(pairs);
+        // removed are pairs pending for removal
+        List<Pair<File, File>> removed = new ArrayList<>();
+
         int objectCnt = 0, backgroundCnt = 0;
-        for (Pair<File, File> pair : pairs) {
+        for (Pair<File, File> pair : remains) {
             if (pair.getKey().length() == 0) {
                 backgroundCnt++;
                 backgrounds.add(pair);
-//                System.out.println(file.getName());
             }
             else objectCnt++;
         }
@@ -42,12 +46,24 @@ public class Balancer {
 
                 Pair<File, File> pair = backgrounds.get(idx);
                 if (pair != null) {
-                    fileIO.remove(pair.getKey());
-                    fileIO.remove(pair.getValue());
-
-                    backgrounds.remove(pair.getKey());
-                    backgrounds.remove(pair.getValue());
+                    removed.add(pair);
+                    remains.remove(pair);
                 }
+            }
+        }
+
+        // finally perform copy and move operations
+        if (fromInput) {
+            for (Pair<File, File> pair : remains) {
+                // copy to output
+                fileIO.copy(pair.getKey());
+                fileIO.copy(pair.getValue());
+            }
+        }
+        else {
+            for (Pair<File, File> pair : removed) {
+                fileIO.remove(pair.getKey());
+                fileIO.remove(pair.getValue());
             }
         }
     }
