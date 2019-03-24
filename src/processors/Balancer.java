@@ -54,18 +54,18 @@ public class Balancer {
             }
         }
 
-        // finally perform copy and move operations
+        // finally perform toProcessed and move operations
         if (fromInput) {
             for (MarkedImage pair : remains) {
-                // copy to output
-                fileIO.copy(pair.getTxt());
-                fileIO.copy(pair.getImg());
+                // toProcessed to output
+                fileIO.toProcessed(pair.getTxt());
+                fileIO.toProcessed(pair.getImg());
             }
         }
         else {
             for (MarkedImage pair : removed) {
-                fileIO.remove(pair.getTxt());
-                fileIO.remove(pair.getImg());
+                fileIO.toRemoved(pair.getTxt());
+                fileIO.toRemoved(pair.getImg());
             }
         }
     }

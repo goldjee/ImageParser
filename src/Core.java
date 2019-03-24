@@ -23,7 +23,7 @@ public class Core {
 
     public void crop() {
         System.out.println("Cropping started");
-        pairs = buildPairs(true);
+        pairs = buildPairs(fileIO.BASE_DIR);
 
         for (MarkedImage pair : pairs) {
             Cropper cropper = new Cropper(fileIO);
@@ -38,15 +38,15 @@ public class Core {
         System.out.println("Balancing started");
 
         // we'll try to balance dataset in processed dir
-        pairs = buildPairs(false);
+        pairs = buildPairs(fileIO.PROCESSED_DIR);
 
         if (pairs.size() > 0) {
             balancer.balance(pairs, false);
         }
         else {
-            // if it's empty, okay. we'll try input dir
-            pairs = buildPairs(true);
-            // and copy results to output btw
+            // if it's empty, okay. we'll try base dir
+            pairs = buildPairs(fileIO.BASE_DIR);
+            // and toProcessed results to output btw
             balancer.balance(pairs, true);
         }
 
@@ -54,10 +54,11 @@ public class Core {
     }
 
     public void cleanup() {
-        fileIO.cleanup();
+        fileIO.clean(fileIO.PROCESSED_DIR);
+        fileIO.clean(fileIO.REMOVED_DIR);
     }
 
-    private List<MarkedImage> buildPairs(boolean inputDir) {
+    private List<MarkedImage> buildPairs(String inputDir) {
         List<MarkedImage> pairs = new ArrayList<>();
 
         List<File> dirContents = fileIO.list(inputDir);

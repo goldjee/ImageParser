@@ -15,34 +15,28 @@ import java.util.List;
  * Created by Ins on 16.03.2019.
  */
 public class FileIO {
-    private static final String baseUri = System.getProperty("user.dir") + "\\img";
-    private static final String removedUri = System.getProperty("user.dir") + "\\img\\processed\\removed";
-    private static final String processedUri = System.getProperty("user.dir") + "\\img\\processed";
+    public static final String BASE_DIR = System.getProperty("user.dir") + "\\img";
+    public static final String REMOVED_DIR = System.getProperty("user.dir") + "\\img\\processed\\removed";
+    public static final String PROCESSED_DIR = System.getProperty("user.dir") + "\\img\\processed";
 
     public FileIO() {
 
     }
 
-    private List<File> list(File dir, boolean includeSubdirs) {
-        List<File> files = new ArrayList<>();
-
-        if (dir.exists() && dir.isDirectory()) {
-            for (File entry : dir.listFiles()) {
-                if (!entry.isDirectory())
-                    files.add(entry);
-                else if (includeSubdirs)
-                    files.addAll(list(entry, includeSubdirs));
-            }
+    public List<File> list(String dirName) {
+        if (dirName != null && (dirName.equals(BASE_DIR) || dirName.equals(REMOVED_DIR) || dirName.equals(PROCESSED_DIR))) {
+            return list(new File(dirName), false);
         }
-
-        return files;
+        else
+            return new ArrayList<>();
     }
 
-    public List<File> list(boolean inputDir) {
-        if (inputDir)
-            return list(new File(baseUri), false);
-        else
-            return list(new File(processedUri), false);
+    public void toRemoved(File file) {
+        move(file, new File(REMOVED_DIR));
+    }
+
+    public void toProcessed(File file) {
+        copy(file, new File(PROCESSED_DIR));
     }
 
     public List<File> filterExtension(List<File> files, String extension, boolean match) {
@@ -77,6 +71,19 @@ public class FileIO {
         return name.substring(0, lastIndexOf);
     }
 
+    public void clean(String dirName) {
+        if (dirName != null && (dirName.equals(BASE_DIR) || dirName.equals(REMOVED_DIR) || dirName.equals(PROCESSED_DIR))) {
+            List<File> removeables = new ArrayList<>();
+            removeables.addAll(list(new File(dirName), false));
+
+            for (File f : removeables) {
+                if (f.exists())
+                    f.delete();
+            }
+        }
+    }
+
+    // basic file and dir operations
     private void move(File file, File targetDir) {
         if (!targetDir.exists()) {
             targetDir.mkdir();
@@ -103,32 +110,19 @@ public class FileIO {
         }
     }
 
-    public void remove(File file) {
-        move(file, new File(removedUri));
-    }
+    private List<File> list(File dir, boolean includeSubdirs) {
+        List<File> files = new ArrayList<>();
 
-    public void copy(File file) {
-        copy(file, new File(processedUri));
-    }
-
-    public void cleanup() {
-        clean(true);
-        clean(false);
-    }
-
-    // if processed, clean it, else clean removed dir
-    public void clean(boolean processed) {
-        List<File> removeables = new ArrayList<>();
-
-        if (processed)
-            removeables.addAll(list(new File(processedUri), false));
-        else
-            removeables.addAll(list(new File(removedUri), false));
-
-        for (File f : removeables) {
-            if (f.exists())
-                f.delete();
+        if (dir.exists() && dir.isDirectory()) {
+            for (File entry : dir.listFiles()) {
+                if (!entry.isDirectory())
+                    files.add(entry);
+                else if (includeSubdirs)
+                    files.addAll(list(entry, includeSubdirs));
+            }
         }
+
+        return files;
     }
 
     public BufferedImage readImg(File file) {
@@ -159,7 +153,7 @@ public class FileIO {
 
     public void saveImg(BufferedImage image, File file) {
         try {
-            File out = new File(processedUri + "\\" + file.getName());
+            File out = new File(PROCESSED_DIR + "\\" + file.getName());
 
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();
@@ -172,7 +166,7 @@ public class FileIO {
 
     public void saveTxt(List<String> lines, File file) {
         try {
-            File out = new File(processedUri + "\\" + file.getName());
+            File out = new File(PROCESSED_DIR + "\\" + file.getName());
 
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();
