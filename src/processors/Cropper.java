@@ -4,6 +4,7 @@ import processors.classes.MarkedImage;
 import processors.classes.MarkedObject;
 import processors.classes.Region;
 import utils.FileIO;
+import utils.ProgressMonitor;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,15 +15,26 @@ import java.util.List;
 /**
  * Created by Ins on 16.03.2019.
  */
-public class Cropper {
+public class Cropper implements Runnable {
 
     // size resized image in pixels
     private static final int size = 320;
 
     private final FileIO fileIO;
+    private final ProgressMonitor monitor;
 
-    public Cropper(FileIO fileIO) {
+    private MarkedImage pair = null;
+
+    public Cropper(MarkedImage pair, FileIO fileIO, ProgressMonitor monitor) {
+        this.pair = pair;
         this.fileIO = fileIO;
+        this.monitor = monitor;
+    }
+
+    @Override
+    public void run() {
+        crop(pair);
+        monitor.increment();
     }
 
     public void crop(MarkedImage pair) {

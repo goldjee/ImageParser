@@ -2,44 +2,59 @@ import processors.Balancer;
 import processors.Cropper;
 import processors.classes.MarkedImage;
 import utils.FileIO;
+import utils.ProgressMonitor;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Ins on 18.03.2019.
  */
 public class Core {
     private final FileIO fileIO;
-    private final Balancer balancer;
+    private final ProgressMonitor monitor;
 
     List<MarkedImage> pairs;
 
+    private volatile int cntDone = 0,
+        cntAll = 0;
+
     public Core() {
         fileIO = new FileIO();
-        balancer = new Balancer(fileIO);
+        monitor = new ProgressMonitor();
     }
 
     public void crop() {
         System.out.println("Cropping started");
         pairs = buildPairs(fileIO.BASE_DIR);
 
-        Cropper cropper = new Cropper(fileIO);
+        monitor.setCntAll(pairs.size());
 
-        for (int i = 0; i < pairs.size(); i++) {
-            MarkedImage pair = pairs.get(i);
-            cropper.crop(pair);
-            System.out.print("\rCropped: " + (double) Math.round((double) i / pairs.size() * 10000) / 100 + "%");
-            System.out.flush();
+        // pooling threads ensurin not to burn the machine
+        ExecutorService es = Executors.newFixedThreadPool(8);
+        List<Thread> croppers = new ArrayList<>(cntAll);
+        for (MarkedImage pair : pairs) {
+            Cropper c = new Cropper(pair, fileIO, monitor);
+            Thread t = new Thread(c);
+            t.setDaemon(true);
+            croppers.add(t);
+//            t.start();
+
+            es.submit(t);
         }
-        System.out.println();
+        // wait for recent task to finish
+        waitTasks();
+        es.shutdown();
 
         System.out.println("Cropping done");
     }
 
     public void balance() {
         System.out.println("Balancing started");
+        Balancer balancer = new Balancer(fileIO, monitor);
 
         // we'll try to balance dataset in processed dir
         pairs = buildPairs(fileIO.PROCESSED_DIR);
@@ -54,12 +69,24 @@ public class Core {
             balancer.balance(pairs, true);
         }
 
+        waitTasks();
+
         System.out.println("Balancing done");
     }
 
     public void cleanup() {
         fileIO.clean(fileIO.PROCESSED_DIR);
         fileIO.clean(fileIO.REMOVED_DIR);
+    }
+
+    private void waitTasks() {
+        while (!monitor.isFinished()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private List<MarkedImage> buildPairs(String inputDir) {

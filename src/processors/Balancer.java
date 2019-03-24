@@ -2,6 +2,7 @@ package processors;
 
 import processors.classes.MarkedImage;
 import utils.FileIO;
+import utils.ProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +17,11 @@ public class Balancer {
     private static final float ratio = 1.0f;
 
     private final FileIO fileIO;
+    private final ProgressMonitor monitor;
 
-    public Balancer(FileIO fileIO) {
+    public Balancer(FileIO fileIO, ProgressMonitor monitor) {
         this.fileIO = fileIO;
+        this.monitor = monitor;
     }
 
     public void balance(List<MarkedImage> pairs, boolean fromInput) {
@@ -56,16 +59,24 @@ public class Balancer {
 
         // finally perform toProcessed and move operations
         if (fromInput) {
+            monitor.setCntAll(remains.size());
+
             for (MarkedImage pair : remains) {
                 // toProcessed to output
                 fileIO.toProcessed(pair.getTxt());
                 fileIO.toProcessed(pair.getImg());
+
+                monitor.increment();
             }
         }
         else {
+            monitor.setCntAll(removed.size());
+
             for (MarkedImage pair : removed) {
                 fileIO.toRemoved(pair.getTxt());
                 fileIO.toRemoved(pair.getImg());
+
+                monitor.increment();
             }
         }
     }
