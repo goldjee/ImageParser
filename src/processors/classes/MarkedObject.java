@@ -1,3 +1,5 @@
+package processors.classes;
+
 import java.awt.*;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -6,20 +8,20 @@ import java.util.List;
 /**
  * Created by Ins on 22.03.2019.
  */
-public class Object {
+public class MarkedObject {
     // it's an object. defined by object class and bounding rectangle
     // all the coordinates stored are relative to original image
 
     public int c;
     public Rectangle bounds;
 
-    public Object(int c, Rectangle bounds) {
+    public MarkedObject(int c, Rectangle bounds) {
         this.c = c;
         this.bounds = bounds;
     }
 
     // creates object from string of YOLO format
-    public Object(String line, int maxW, int maxH) {
+    public MarkedObject(String line, int maxW, int maxH) {
         List<String> coords = new LinkedList<>(Arrays.asList(line.split(" ")));
 
         int width = (int) (Double.parseDouble(coords.get(3)) * maxW);
@@ -34,7 +36,7 @@ public class Object {
 
     // returns YOLO string with coordinates related to some Rectangle
     public String toYoloFormat(Rectangle rect) {
-        Object o = convertCoords(rect);
+        MarkedObject o = convertCoords(rect);
 
         float x = (float) o.bounds.getCenterX() / rect.width;
         float y = (float) o.bounds.getCenterY() / rect.height;
@@ -44,10 +46,10 @@ public class Object {
         return o.c + " " + x + " " + y + " " + width + " " + height;
     }
 
-    // returns new Object with coordinates relative to given rectangle
-    private Object convertCoords(Rectangle rect) {
+    // returns new processors.classes.MarkedObject with coordinates relative to given rectangle
+    private MarkedObject convertCoords(Rectangle rect) {
         Rectangle newBounds = new Rectangle(bounds.x - rect.x, bounds.y - rect.y, bounds.width, bounds.height);
 
-        return new Object(this.c, newBounds);
+        return new MarkedObject(this.c, newBounds);
     }
 }

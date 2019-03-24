@@ -1,3 +1,5 @@
+package processors.classes;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -6,28 +8,28 @@ import java.util.List;
  * Created by Ins on 22.03.2019.
  */
 public class Region {
-    // it's a class that describes a bounding rectangle which contains a number of objects
+    // it's a class that describes a bounding rectangle which contains a number of markedObjects
     // all the coordinates stored are relative to original image
 
     private final int offset = 20;
 
-    public List<Object> objects;
+    public List<MarkedObject> markedObjects;
     public Rectangle bounds;
 
     public Region(int maxW, int maxH, int minSize) {
-        this.objects = new ArrayList<>();
+        this.markedObjects = new ArrayList<>();
         this.bounds = new Rectangle((maxW - minSize) / 2, (maxH - minSize) / 2, minSize, minSize);
     }
 
-    public Region(List<Object> objects, Rectangle bounds) {
-        this.objects = objects;
+    public Region(List<MarkedObject> markedObjects, Rectangle bounds) {
+        this.markedObjects = markedObjects;
         this.bounds = bounds;
     }
 
-    public Region(Object o) {
+    public Region(MarkedObject o) {
         this.bounds = (Rectangle) o.bounds.clone();
-        objects = new ArrayList<>();
-        objects.add(o);
+        markedObjects = new ArrayList<>();
+        markedObjects.add(o);
     }
 
     public void prepare(int maxW, int maxH, int minSize) {
@@ -48,10 +50,10 @@ public class Region {
         return false;
     }
 
-    // returns new Region whiich is a sum of this and given one
+    // returns new processors.classes.Region whiich is a sum of this and given one
     public Region merge(Region region) {
-        List<Object> objects = new ArrayList<>(this.objects);
-        objects.addAll(region.objects);
+        List<MarkedObject> markedObjects = new ArrayList<>(this.markedObjects);
+        markedObjects.addAll(region.markedObjects);
 
         Point tl1 = tl();
         Point br1 = br();
@@ -63,14 +65,14 @@ public class Region {
 
         Rectangle bounds = new Rectangle(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
 
-        return new Region(objects, bounds);
+        return new Region(markedObjects, bounds);
     }
 
-    // returns list of YOLO strings describing objects in region
+    // returns list of YOLO strings describing markedObjects in region
     public List<String> toYoloList() {
-        List<String> lines = new ArrayList<>(objects.size());
+        List<String> lines = new ArrayList<>(markedObjects.size());
 
-        for (Object o : objects) {
+        for (MarkedObject o : markedObjects) {
             String line = o.toYoloFormat(bounds);
             lines.add(line);
         }

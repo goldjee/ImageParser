@@ -1,3 +1,10 @@
+package processors;
+
+import processors.classes.MarkedImage;
+import processors.classes.MarkedObject;
+import processors.classes.Region;
+import utils.FileIO;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -39,7 +46,7 @@ public class Cropper implements Runnable {
                 // if there are some regions
                 // let's mark them all
                 for (String line : txt) {
-                    Object o = new Object(line, img.getWidth(), img.getHeight());
+                    MarkedObject o = new MarkedObject(line, img.getWidth(), img.getHeight());
                     Region region = new Region(o);
                     region.prepare(img.getWidth(), img.getHeight(), size);
 

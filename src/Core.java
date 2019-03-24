@@ -1,4 +1,7 @@
-import javafx.util.Pair;
+import processors.Balancer;
+import processors.Cropper;
+import processors.classes.MarkedImage;
+import utils.FileIO;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,7 +13,7 @@ import java.util.List;
 public class Core {
     private final FileIO fileIO = new FileIO();
     private final Balancer balancer = new Balancer(fileIO);
-//    private final Cropper cropper = new Cropper(fileIO);
+//    private final processors.Cropper cropper = new processors.Cropper(fileIO);
 
     List<MarkedImage> pairs;
 

@@ -1,3 +1,8 @@
+package processors;
+
+import processors.classes.MarkedImage;
+import utils.FileIO;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
