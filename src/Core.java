@@ -11,14 +11,14 @@ import java.util.List;
  * Created by Ins on 18.03.2019.
  */
 public class Core {
-    private final FileIO fileIO = new FileIO();
-    private final Balancer balancer = new Balancer(fileIO);
-//    private final processors.Cropper cropper = new processors.Cropper(fileIO);
+    private final FileIO fileIO;
+    private final Balancer balancer;
 
     List<MarkedImage> pairs;
 
     public Core() {
-
+        fileIO = new FileIO();
+        balancer = new Balancer(fileIO);
     }
 
     public void crop() {
@@ -28,7 +28,8 @@ public class Core {
         for (MarkedImage pair : pairs) {
             Cropper cropper = new Cropper(fileIO);
             cropper.set(pair);
-            cropper.run();
+            cropper.setDaemon(true);
+            cropper.start();
         }
 
         System.out.println("Cropping done");

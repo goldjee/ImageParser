@@ -14,12 +14,12 @@ import java.util.List;
 /**
  * Created by Ins on 16.03.2019.
  */
-public class Cropper implements Runnable {
+public class Cropper extends Thread {
 
     // size resized image in pixels
     private static final int size = 320;
 
-    private FileIO fileIO;
+    private final FileIO fileIO;
 
     private MarkedImage pair = null;
 

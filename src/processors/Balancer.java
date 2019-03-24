@@ -15,7 +15,7 @@ public class Balancer {
     // target object to background ratio
     private static final float ratio = 1.0f;
 
-    private FileIO fileIO;
+    private final FileIO fileIO;
 
     public Balancer(FileIO fileIO) {
         this.fileIO = fileIO;
