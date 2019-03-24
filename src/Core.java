@@ -25,12 +25,15 @@ public class Core {
         System.out.println("Cropping started");
         pairs = buildPairs(fileIO.BASE_DIR);
 
-        for (MarkedImage pair : pairs) {
-            Cropper cropper = new Cropper(fileIO);
-            cropper.set(pair);
-            cropper.setDaemon(true);
-            cropper.start();
+        Cropper cropper = new Cropper(fileIO);
+
+        for (int i = 0; i < pairs.size(); i++) {
+            MarkedImage pair = pairs.get(i);
+            cropper.crop(pair);
+            System.out.print("\rCropped: " + (double) Math.round((double) i / pairs.size() * 10000) / 100 + "%");
+            System.out.flush();
         }
+        System.out.println();
 
         System.out.println("Cropping done");
     }
@@ -60,6 +63,7 @@ public class Core {
     }
 
     private List<MarkedImage> buildPairs(String inputDir) {
+//        System.out.println("Listing directory");
         List<MarkedImage> pairs = new ArrayList<>();
 
         List<File> dirContents = fileIO.list(inputDir);

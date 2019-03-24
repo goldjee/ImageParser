@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -15,9 +16,11 @@ import java.util.List;
  * Created by Ins on 16.03.2019.
  */
 public class FileIO {
-    public static final String BASE_DIR = System.getProperty("user.dir") + "\\img";
-    public static final String REMOVED_DIR = System.getProperty("user.dir") + "\\img\\processed\\removed";
-    public static final String PROCESSED_DIR = System.getProperty("user.dir") + "\\img\\processed";
+    public static final String SEPARATOR = FileSystems.getDefault().getSeparator();
+
+    public static final String BASE_DIR = System.getProperty("user.dir") + SEPARATOR + "img";
+    public static final String REMOVED_DIR = System.getProperty("user.dir") + SEPARATOR + "img" + SEPARATOR + "processed" + SEPARATOR + "removed";
+    public static final String PROCESSED_DIR = System.getProperty("user.dir") + SEPARATOR + "img" + SEPARATOR + "processed";
 
     public FileIO() {
 
@@ -91,7 +94,7 @@ public class FileIO {
 
         try {
             if (file.exists())
-                Files.move(Paths.get(file.getAbsolutePath()), Paths.get(targetDir.getAbsolutePath() + "\\" + file.getName()), StandardCopyOption.REPLACE_EXISTING);
+                Files.move(Paths.get(file.getAbsolutePath()), Paths.get(targetDir.getAbsolutePath() + SEPARATOR + file.getName()), StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -104,7 +107,7 @@ public class FileIO {
 
         try {
             if (file.exists())
-                Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(targetDir.getAbsolutePath() + "\\" + file.getName()), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(targetDir.getAbsolutePath() + SEPARATOR + file.getName()), StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,7 +156,7 @@ public class FileIO {
 
     public void saveImg(BufferedImage image, File file) {
         try {
-            File out = new File(PROCESSED_DIR + "\\" + file.getName());
+            File out = new File(PROCESSED_DIR + SEPARATOR + file.getName());
 
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();
@@ -166,7 +169,7 @@ public class FileIO {
 
     public void saveTxt(List<String> lines, File file) {
         try {
-            File out = new File(PROCESSED_DIR + "\\" + file.getName());
+            File out = new File(PROCESSED_DIR + SEPARATOR + file.getName());
 
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();

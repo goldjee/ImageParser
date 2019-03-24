@@ -14,29 +14,18 @@ import java.util.List;
 /**
  * Created by Ins on 16.03.2019.
  */
-public class Cropper extends Thread {
+public class Cropper {
 
     // size resized image in pixels
     private static final int size = 320;
 
     private final FileIO fileIO;
 
-    private MarkedImage pair = null;
-
     public Cropper(FileIO fileIO) {
         this.fileIO = fileIO;
     }
 
-    public void set(MarkedImage pair) {
-        this.pair = pair;
-    }
-
-    @Override
-    public void run() {
-        crop(pair);
-    }
-
-    private void crop(MarkedImage pair) {
+    public void crop(MarkedImage pair) {
         List<String> txt = fileIO.readTxt(pair.getTxt());
         BufferedImage img = fileIO.readImg(pair.getImg());
 
@@ -74,7 +63,7 @@ public class Cropper extends Thread {
                     Region r = regions.get(i);
                     List<String> coords = r.toYoloList();
 
-                    String basePath = pair.getTxt().getParent() + "\\";
+                    String basePath = pair.getTxt().getParent() + fileIO.SEPARATOR;
                     String txtPath = basePath + fileIO.getFileNameWithoutExtension(pair.getTxt()) + "_" + i + "." + fileIO.getFileExtension(pair.getTxt());
                     String imgPath = basePath + fileIO.getFileNameWithoutExtension(pair.getImg()) + "_" + i + "." + fileIO.getFileExtension(pair.getImg());
 
