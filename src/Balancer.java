@@ -1,6 +1,3 @@
-import javafx.util.Pair;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,17 +16,17 @@ public class Balancer {
         this.fileIO = fileIO;
     }
 
-    public void balance(List<Pair<File, File>> pairs, boolean fromInput) {
-        List<Pair<File, File>> backgrounds = new ArrayList<>();
+    public void balance(List<MarkedImage> pairs, boolean fromInput) {
+        List<MarkedImage> backgrounds = new ArrayList<>();
 
         // remains are pairs which should be preserved
-        List<Pair<File, File>> remains = new ArrayList<>(pairs);
+        List<MarkedImage> remains = new ArrayList<>(pairs);
         // removed are pairs pending for removal
-        List<Pair<File, File>> removed = new ArrayList<>();
+        List<MarkedImage> removed = new ArrayList<>();
 
         int objectCnt = 0, backgroundCnt = 0;
-        for (Pair<File, File> pair : remains) {
-            if (pair.getKey().length() == 0) {
+        for (MarkedImage pair : remains) {
+            if (pair.getTxt().length() == 0) {
                 backgroundCnt++;
                 backgrounds.add(pair);
             }
@@ -44,7 +41,7 @@ public class Balancer {
             for (int i = 0; i < (int) ((float) objectCnt / this.ratio); i++) {
                 int idx = rnd.nextInt(backgrounds.size() - 1);
 
-                Pair<File, File> pair = backgrounds.get(idx);
+                MarkedImage pair = backgrounds.get(idx);
                 if (pair != null) {
                     removed.add(pair);
                     remains.remove(pair);
@@ -54,16 +51,16 @@ public class Balancer {
 
         // finally perform copy and move operations
         if (fromInput) {
-            for (Pair<File, File> pair : remains) {
+            for (MarkedImage pair : remains) {
                 // copy to output
-                fileIO.copy(pair.getKey());
-                fileIO.copy(pair.getValue());
+                fileIO.copy(pair.getTxt());
+                fileIO.copy(pair.getImg());
             }
         }
         else {
-            for (Pair<File, File> pair : removed) {
-                fileIO.remove(pair.getKey());
-                fileIO.remove(pair.getValue());
+            for (MarkedImage pair : removed) {
+                fileIO.remove(pair.getTxt());
+                fileIO.remove(pair.getImg());
             }
         }
     }
