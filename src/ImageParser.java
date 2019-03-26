@@ -16,7 +16,7 @@ public class ImageParser {
             if (args[i].equals("-b") || args[i].equals("-balance"))
                 balance = true;
             if (args[i].equals("-cl") || args[i].equals("-cleanup"))
-                balance = true;
+                cleanup = true;
         }
 
         Core core = new Core();
