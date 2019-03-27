@@ -2,9 +2,9 @@ import processors.Balancer;
 import processors.Cropper;
 import processors.classes.MarkedImage;
 import utils.FileIO;
+import utils.PairHandler;
 import utils.ProgressMonitor;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -15,21 +15,21 @@ import java.util.concurrent.Executors;
  */
 public class Core {
     private final FileIO fileIO;
+    private final PairHandler pairHandler;
     private final ProgressMonitor monitor;
-
-    List<MarkedImage> pairs;
 
     private volatile int cntDone = 0,
         cntAll = 0;
 
     public Core() {
         fileIO = new FileIO();
+        pairHandler = new PairHandler(fileIO);
         monitor = new ProgressMonitor();
     }
 
     public void crop() {
         System.out.println("Cropping started");
-        pairs = buildPairs(fileIO.BASE_DIR);
+        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
 
         monitor.setCntAll(pairs.size());
 
@@ -57,14 +57,14 @@ public class Core {
         Balancer balancer = new Balancer(fileIO, monitor);
 
         // we'll try to balance dataset in processed dir
-        pairs = buildPairs(fileIO.PROCESSED_DIR);
+        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
 
         if (pairs.size() > 0) {
             balancer.balance(pairs, false);
         }
         else {
             // if it's empty, okay. we'll try base dir
-            pairs = buildPairs(fileIO.BASE_DIR);
+            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
             // and toProcessed results to output btw
             balancer.balance(pairs, true);
         }
@@ -74,9 +74,50 @@ public class Core {
         System.out.println("Balancing done");
     }
 
+    public void removeEmpty() {
+        System.out.println("Empty removal started");
+        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
+
+        // if there are unmarked pairs in processed dir, we will remove them
+        if (pairs.size() > 0) {
+            monitor.setCntAll(pairs.size());
+
+            for (MarkedImage pair : pairs) {
+                fileIO.toRemoved(pair.getImg());
+                if (pair.getTxt() != null)
+                    fileIO.toRemoved(pair.getTxt());
+
+                monitor.increment();
+            }
+        }
+        // or we can seek input dir and move marked to processed
+        else {
+            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED_NONEMPTY);
+
+            if (pairs.size() > 0) {
+                monitor.setCntAll(pairs.size());
+
+                for (MarkedImage pair : pairs) {
+                    fileIO.toProcessed(pair.getImg());
+                    if (pair.getTxt() != null)
+                        fileIO.toProcessed(pair.getTxt());
+
+                    monitor.increment();
+                }
+            }
+        }
+
+        waitTasks();
+        System.out.println("Empty removal done");
+    }
+
     public void cleanup() {
+        System.out.println("Cleanup started");
+
         fileIO.clean(fileIO.PROCESSED_DIR);
         fileIO.clean(fileIO.REMOVED_DIR);
+
+        System.out.println("Cleanup done");
     }
 
     private void waitTasks() {
@@ -87,26 +128,5 @@ public class Core {
                 e.printStackTrace();
             }
         }
-    }
-
-    private List<MarkedImage> buildPairs(String inputDir) {
-//        System.out.println("Listing directory");
-        List<MarkedImage> pairs = new ArrayList<>();
-
-        List<File> dirContents = fileIO.list(inputDir);
-        List<File> txts = fileIO.filterExtension(dirContents, "txt", true);
-        List<File> imgs = fileIO.filterExtension(dirContents, "txt", false);
-
-        for (File txt : txts) {
-            for (File img : imgs) {
-                if (fileIO.getFileNameWithoutExtension(txt).equals(fileIO.getFileNameWithoutExtension(img))) {
-                    MarkedImage pair = new MarkedImage(txt, img);
-                    pairs.add(pair);
-                    break;
-                }
-            }
-        }
-
-        return pairs;
     }
 }

@@ -8,7 +8,8 @@ public class ImageParser {
 
         boolean balance = false,
                 crop = false,
-                cleanup = false;
+                cleanup = false,
+                removeEmpty = false;
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-c") || args[i].equals("-crop"))
@@ -17,6 +18,8 @@ public class ImageParser {
                 balance = true;
             if (args[i].equals("-cl") || args[i].equals("-cleanup"))
                 cleanup = true;
+            if (args[i].equals("-re") || args[i].equals("-remove_empty"))
+                removeEmpty = true;
         }
 
         Core core = new Core();
@@ -28,7 +31,9 @@ public class ImageParser {
         if (crop)
             core.crop();
 
-        if (balance)
+        if (removeEmpty)
+            core.removeEmpty();
+        else if (balance)
             core.balance();
 
         System.out.println("Jobs done");
