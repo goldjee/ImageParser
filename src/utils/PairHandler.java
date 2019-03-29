@@ -16,7 +16,8 @@ public class PairHandler {
             //                             txt objects
             FILTER_EMPTY = 0,           // ?   -
             FILTER_MARKED = 1,          // +   ?
-            FILTER_MARKED_NONEMPTY = 2; // +   +
+            FILTER_MARKED_NONEMPTY = 2, // +   +
+            FILTER_UNMARKED = 3;        // -   ?
 
     public PairHandler(FileIO fileIO) {
         this.fileIO = fileIO;
@@ -71,6 +72,8 @@ public class PairHandler {
                 case FILTER_MARKED_NONEMPTY:
                     if (pair.isMarkedWithObjects()) filtered.add(pair);
                     break;
+                case FILTER_UNMARKED:
+                    if (pair.isUnmarked()) filtered.add(pair);
             }
         }
 

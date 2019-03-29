@@ -39,4 +39,8 @@ public class MarkedImage {
     public boolean isMarkedWithObjects() {
         return txt != null && txt.length() != 0;
     }
+
+    public boolean isUnmarked() {
+        return txt == null;
+    }
 }

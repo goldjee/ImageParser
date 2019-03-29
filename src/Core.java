@@ -78,7 +78,7 @@ public class Core {
         System.out.println("Empty removal started");
         List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
 
-        // if there are unmarked pairs in processed dir, we will remove them
+        // if there are empty pairs in processed dir, we will remove them
         if (pairs.size() > 0) {
             monitor.setCntAll(pairs.size());
 
@@ -109,6 +109,43 @@ public class Core {
 
         waitTasks();
         System.out.println("Empty removal done");
+    }
+
+    public void removeUnmarked() {
+        System.out.println("Unmarked removal started");
+        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_UNMARKED);
+
+        // if there are unmarked pairs in processed dir, we will remove them
+        if (pairs.size() > 0) {
+            monitor.setCntAll(pairs.size());
+
+            for (MarkedImage pair : pairs) {
+                fileIO.toRemoved(pair.getImg());
+                if (pair.getTxt() != null)
+                    fileIO.toRemoved(pair.getTxt());
+
+                monitor.increment();
+            }
+        }
+        // or we can seek input dir and move marked to processed
+        else {
+            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+
+            if (pairs.size() > 0) {
+                monitor.setCntAll(pairs.size());
+
+                for (MarkedImage pair : pairs) {
+                    fileIO.toProcessed(pair.getImg());
+                    if (pair.getTxt() != null)
+                        fileIO.toProcessed(pair.getTxt());
+
+                    monitor.increment();
+                }
+            }
+        }
+
+        waitTasks();
+        System.out.println("Unmarked removal done");
     }
 
     public void cleanup() {
