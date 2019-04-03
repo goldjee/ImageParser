@@ -27,29 +27,41 @@ public class Core {
         monitor = new ProgressMonitor();
     }
 
-    public void crop() {
-        System.out.println("Cropping started");
-        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+    public void crop(int size, int type) {
+        if ((type == 1 || type == 2) && size > 0) {
+            String cropType = "undefined";
+            switch (type) {
+                case 1:
+                    cropType = "lossy";
+                    break;
+                case 2:
+                    cropType = "lossless";
+                    break;
+            }
 
-        monitor.setCntAll(pairs.size());
+            System.out.println("Cropping started [" + cropType + "]");
+            List<MarkedImage> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
 
-        // pooling threads ensurin not to burn the machine
-        ExecutorService es = Executors.newFixedThreadPool(8);
-        List<Thread> croppers = new ArrayList<>(cntAll);
-        for (MarkedImage pair : pairs) {
-            Cropper c = new Cropper(pair, fileIO, monitor);
-            Thread t = new Thread(c);
-            t.setDaemon(true);
-            croppers.add(t);
+            monitor.setCntAll(pairs.size());
+
+            // pooling threads ensurin not to burn the machine
+            ExecutorService es = Executors.newFixedThreadPool(8);
+            List<Thread> croppers = new ArrayList<>(cntAll);
+            for (MarkedImage pair : pairs) {
+                Cropper c = new Cropper(pair, type, size, fileIO, monitor);
+                Thread t = new Thread(c);
+                t.setDaemon(true);
+                croppers.add(t);
 //            t.start();
 
-            es.submit(t);
-        }
-        // wait for recent task to finish
-        waitTasks();
-        es.shutdown();
+                es.submit(t);
+            }
+            // wait for recent task to finish
+            waitTasks();
+            es.shutdown();
 
-        System.out.println("Cropping done");
+            System.out.println("Cropping done");
+        }
     }
 
     public void balance() {

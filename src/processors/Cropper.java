@@ -17,16 +17,20 @@ import java.util.List;
  */
 public class Cropper implements Runnable {
 
-    // size resized image in pixels
-    private static final int size = 320;
+    // cropping algorythm
+    private final int type;
+    // size of resized image in pixels
+    private final int size;
 
     private final FileIO fileIO;
     private final ProgressMonitor monitor;
 
     private MarkedImage pair = null;
 
-    public Cropper(MarkedImage pair, FileIO fileIO, ProgressMonitor monitor) {
+    public Cropper(MarkedImage pair, int type, int size, FileIO fileIO, ProgressMonitor monitor) {
         this.pair = pair;
+        this.type = type;
+        this.size = size;
         this.fileIO = fileIO;
         this.monitor = monitor;
     }
@@ -80,7 +84,8 @@ public class Cropper implements Runnable {
                     String imgPath = basePath + fileIO.getFileNameWithoutExtension(pair.getImg()) + "_" + i + "." + fileIO.getFileExtension(pair.getImg());
 
                     BufferedImage cropped = img.getSubimage(r.tl().x, r.tl().y, r.width(), r.height());
-                    cropped = resize(cropped);
+                    if (type == 1 || (type == 2 && cropped.getWidth() < size))
+                        cropped = resize(cropped);
 
                     fileIO.saveTxt(coords, new File(txtPath));
                     fileIO.saveImg(cropped, new File(imgPath));
