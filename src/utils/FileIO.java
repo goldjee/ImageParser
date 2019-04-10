@@ -173,8 +173,10 @@ public class FileIO {
                 jpegParam.setCompressionQuality(1f);
 
                 ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-                writer.setOutput(new FileImageOutputStream(out));
+                FileImageOutputStream fileImageOutputStream = new FileImageOutputStream(out);
+                writer.setOutput(fileImageOutputStream);
                 writer.write(null, new IIOImage(image, null, null), jpegParam);
+                fileImageOutputStream.close();
                 writer.dispose();
             }
             else
