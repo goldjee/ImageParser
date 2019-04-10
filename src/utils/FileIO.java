@@ -1,6 +1,11 @@
 package utils;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -161,7 +166,18 @@ public class FileIO {
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();
 
-            ImageIO.write(image, getFileExtension(out), out);
+            // save .jpg without compression
+            if (getFileExtension(out).equals("jpg")) {
+                JPEGImageWriteParam jpegParam = new JPEGImageWriteParam(null);
+                jpegParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                jpegParam.setCompressionQuality(1f);
+
+                ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+                writer.setOutput(new FileImageOutputStream(out));
+                writer.write(null, new IIOImage(image, null, null), jpegParam);
+            }
+            else
+                ImageIO.write(image, getFileExtension(out), out);
         } catch (IOException e) {
             e.printStackTrace();
         }
