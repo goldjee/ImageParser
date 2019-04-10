@@ -175,6 +175,7 @@ public class FileIO {
                 ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
                 writer.setOutput(new FileImageOutputStream(out));
                 writer.write(null, new IIOImage(image, null, null), jpegParam);
+                writer.dispose();
             }
             else
                 ImageIO.write(image, getFileExtension(out), out);
