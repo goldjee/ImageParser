@@ -1,6 +1,6 @@
 package utils;
 
-import processors.classes.MarkedImage;
+import processors.classes.YoloPair;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,8 +23,8 @@ public class PairHandler {
         this.fileIO = FileIO.getInstance();
     }
 
-    public List<MarkedImage> getPairs(String inputDir) {
-        List<MarkedImage> pairs = new ArrayList<>();
+    public List<YoloPair> getPairs(String inputDir) {
+        List<YoloPair> pairs = new ArrayList<>();
 
         List<File> dirContents = fileIO.list(inputDir);
         // txts
@@ -45,11 +45,11 @@ public class PairHandler {
                 }
             }
 
-            MarkedImage pair;
+            YoloPair pair;
             if (txt == null)
-                pair = new MarkedImage(img);
+                pair = new YoloPair(img);
             else
-                pair = new MarkedImage(txt, img);
+                pair = new YoloPair(txt, img);
 
             pairs.add(pair);
         }
@@ -57,11 +57,11 @@ public class PairHandler {
         return pairs;
     }
 
-    public List<MarkedImage> getPairs(String inputDir, int filter) {
-        List<MarkedImage> pairs = getPairs(inputDir);
-        List<MarkedImage> filtered = new ArrayList<>();
+    public List<YoloPair> getPairs(String inputDir, int filter) {
+        List<YoloPair> pairs = getPairs(inputDir);
+        List<YoloPair> filtered = new ArrayList<>();
 
-        for (MarkedImage pair : pairs) {
+        for (YoloPair pair : pairs) {
             switch (filter) {
                 case FILTER_EMPTY:
                     if (pair.isEmpty()) filtered.add(pair);

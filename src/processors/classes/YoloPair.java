@@ -5,18 +5,18 @@ import java.io.File;
 /**
  * Created by Ins on 24.03.2019.
  */
-public class MarkedImage {
+public class YoloPair {
     // this is essentially a pair of image and corresponding .txt in YOLO format
 
     private File img = null;
     private File txt = null;
 
-    public MarkedImage(File txt, File img) {
+    public YoloPair(File txt, File img) {
         this.txt = txt;
         this.img = img;
     }
 
-    public MarkedImage(File img) {
+    public YoloPair(File img) {
         this.img = img;
     }
 

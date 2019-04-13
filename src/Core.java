@@ -1,6 +1,6 @@
 import processors.Balancer;
 import processors.Cropper;
-import processors.classes.MarkedImage;
+import processors.classes.YoloPair;
 import utils.FileIO;
 import utils.PairHandler;
 import utils.ProgressMonitor;
@@ -40,14 +40,14 @@ public class Core {
             }
 
             System.out.println("Cropping started [" + cropType + "]");
-            List<MarkedImage> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+            List<YoloPair> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
 
             monitor.setCntAll(pairs.size());
 
             // pooling threads ensurin not to burn the machine
             ExecutorService es = Executors.newFixedThreadPool(8);
             List<Thread> croppers = new ArrayList<>(cntAll);
-            for (MarkedImage pair : pairs) {
+            for (YoloPair pair : pairs) {
                 Cropper c = new Cropper(pair, type, size, fileIO, monitor);
                 Thread t = new Thread(c);
                 t.setDaemon(true);
@@ -69,7 +69,7 @@ public class Core {
         Balancer balancer = new Balancer(fileIO, monitor);
 
         // we'll try to balance dataset in processed dir
-        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
+        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
 
         if (pairs.size() > 0) {
             balancer.balance(pairs, false);
@@ -88,13 +88,13 @@ public class Core {
 
     public void removeEmpty() {
         System.out.println("Empty removal started");
-        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
+        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
 
         // if there are empty pairs in processed dir, we will remove them
         if (pairs.size() > 0) {
             monitor.setCntAll(pairs.size());
 
-            for (MarkedImage pair : pairs) {
+            for (YoloPair pair : pairs) {
                 fileIO.toRemoved(pair.getImg());
                 if (pair.getTxt() != null)
                     fileIO.toRemoved(pair.getTxt());
@@ -109,7 +109,7 @@ public class Core {
             if (pairs.size() > 0) {
                 monitor.setCntAll(pairs.size());
 
-                for (MarkedImage pair : pairs) {
+                for (YoloPair pair : pairs) {
                     fileIO.toProcessed(pair.getImg());
                     if (pair.getTxt() != null)
                         fileIO.toProcessed(pair.getTxt());
@@ -125,13 +125,13 @@ public class Core {
 
     public void removeUnmarked() {
         System.out.println("Unmarked removal started");
-        List<MarkedImage> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_UNMARKED);
+        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_UNMARKED);
 
         // if there are unmarked pairs in processed dir, we will remove them
         if (pairs.size() > 0) {
             monitor.setCntAll(pairs.size());
 
-            for (MarkedImage pair : pairs) {
+            for (YoloPair pair : pairs) {
                 fileIO.toRemoved(pair.getImg());
                 if (pair.getTxt() != null)
                     fileIO.toRemoved(pair.getTxt());
@@ -146,7 +146,7 @@ public class Core {
             if (pairs.size() > 0) {
                 monitor.setCntAll(pairs.size());
 
-                for (MarkedImage pair : pairs) {
+                for (YoloPair pair : pairs) {
                     fileIO.toProcessed(pair.getImg());
                     if (pair.getTxt() != null)
                         fileIO.toProcessed(pair.getTxt());

@@ -1,6 +1,6 @@
 package processors;
 
-import processors.classes.MarkedImage;
+import processors.classes.YoloPair;
 import processors.classes.MarkedObject;
 import processors.classes.Region;
 import utils.FileIO;
@@ -25,9 +25,9 @@ public class Cropper implements Runnable {
     private final FileIO fileIO;
     private final ProgressMonitor monitor;
 
-    private MarkedImage pair = null;
+    private YoloPair pair = null;
 
-    public Cropper(MarkedImage pair, int type, int size, FileIO fileIO, ProgressMonitor monitor) {
+    public Cropper(YoloPair pair, int type, int size, FileIO fileIO, ProgressMonitor monitor) {
         this.pair = pair;
         this.type = type;
         this.size = size;
@@ -41,7 +41,7 @@ public class Cropper implements Runnable {
         monitor.increment();
     }
 
-    public void crop(MarkedImage pair) {
+    public void crop(YoloPair pair) {
         List<String> txt = fileIO.readTxt(pair.getTxt());
         BufferedImage img = fileIO.readImg(pair.getImg());
 

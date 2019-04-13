@@ -1,6 +1,6 @@
 package processors;
 
-import processors.classes.MarkedImage;
+import processors.classes.YoloPair;
 import utils.FileIO;
 import utils.ProgressMonitor;
 
@@ -24,16 +24,16 @@ public class Balancer {
         this.monitor = monitor;
     }
 
-    public void balance(List<MarkedImage> pairs, boolean fromInput) {
-        List<MarkedImage> backgrounds = new ArrayList<>();
+    public void balance(List<YoloPair> pairs, boolean fromInput) {
+        List<YoloPair> backgrounds = new ArrayList<>();
 
         // remains are pairs which should be preserved
-        List<MarkedImage> remains = new ArrayList<>(pairs);
+        List<YoloPair> remains = new ArrayList<>(pairs);
         // removed are pairs pending for removal
-        List<MarkedImage> removed = new ArrayList<>();
+        List<YoloPair> removed = new ArrayList<>();
 
         int objectCnt = 0, backgroundCnt = 0;
-        for (MarkedImage pair : remains) {
+        for (YoloPair pair : remains) {
             if (pair.getTxt().length() == 0) {
                 backgroundCnt++;
                 backgrounds.add(pair);
@@ -49,7 +49,7 @@ public class Balancer {
             for (int i = 0; i < (int) ((float) objectCnt / this.ratio); i++) {
                 int idx = rnd.nextInt(backgrounds.size() - 1);
 
-                MarkedImage pair = backgrounds.get(idx);
+                YoloPair pair = backgrounds.get(idx);
                 if (pair != null) {
                     removed.add(pair);
                     remains.remove(pair);
@@ -61,7 +61,7 @@ public class Balancer {
         if (fromInput) {
             monitor.setCntAll(remains.size());
 
-            for (MarkedImage pair : remains) {
+            for (YoloPair pair : remains) {
                 // toProcessed to output
                 fileIO.toProcessed(pair.getTxt());
                 fileIO.toProcessed(pair.getImg());
@@ -72,7 +72,7 @@ public class Balancer {
         else {
             monitor.setCntAll(removed.size());
 
-            for (MarkedImage pair : removed) {
+            for (YoloPair pair : removed) {
                 fileIO.toRemoved(pair.getTxt());
                 fileIO.toRemoved(pair.getImg());
 
