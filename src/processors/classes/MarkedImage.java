@@ -3,6 +3,7 @@ package processors.classes;
 import utils.FileIO;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,11 @@ public class MarkedImage {
         for (String yoloLine : region.toYoloList()) {
             objects.add(new MarkedObject(yoloLine, img.getWidth(), img.getHeight()));
         }
+    }
+
+    private MarkedImage(BufferedImage img, List<MarkedObject> objects) {
+        this.img = img;
+        this.objects = objects;
     }
 
     // splits one marked image into a set
@@ -135,5 +141,49 @@ public class MarkedImage {
         g2d.dispose();
 
         img = resized;
+    }
+
+    // rotates image preserving marks
+    public MarkedImage rotate(double angle) {
+        angle = Math.toRadians(angle);
+        BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
+
+        AffineTransform tx = AffineTransform.getRotateInstance(angle, img.getWidth() / 2, img.getHeight() / 2);
+//        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BICUBIC);
+
+        Graphics2D g2d = newImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+//        g2d.drawImage(op.filter(img, newImage), tx, null);
+        g2d.drawImage(img, tx, null);
+        g2d.dispose();
+
+        List<MarkedObject> newObjects = new ArrayList<>(objects.size());
+
+        for (MarkedObject o : objects) {
+            Shape or = tx.createTransformedShape(o.bounds);
+            Rectangle newBounds = or.getBounds();
+
+            // check if bounds are inside the image
+            if (newBounds.x < 0) {
+                newBounds.width -= Math.abs(newBounds.x);
+                newBounds.x = 0;
+            }
+            if (newBounds.y < 0) {
+                newBounds.height -= Math.abs(newBounds.y);
+                newBounds.y = 0;
+            }
+            if (newBounds.x + newBounds.width > newImage.getWidth()) {
+                newBounds.width -= Math.abs(newBounds.x + newBounds.width - newImage.getWidth());
+            }
+            if (newBounds.y + newBounds.height > newImage.getHeight()) {
+                newBounds.height -= Math.abs(newBounds.y + newBounds.height - newImage.getHeight());
+            }
+            if (newBounds.x >= newImage.getWidth() || newBounds.y >= newImage.getHeight())
+                continue;
+
+            newObjects.add(new MarkedObject(o.c, newBounds));
+        }
+
+        return new MarkedImage(newImage, newObjects);
     }
 }

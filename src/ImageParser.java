@@ -8,9 +8,13 @@ public class ImageParser {
 
         boolean balance = false,
                 crop = false,
+                augment = false,
                 cleanup = false;
 
         int cropSize = 320;
+        double augmentAngleBounds = 2;
+        int augmentSteps = 20;
+
 
         int removalType = 0;
         // 0 - no remove
@@ -23,6 +27,16 @@ public class ImageParser {
                 case "-crop":
                     crop = true;
                     if (i + 1 < args.length && isInt(args[i + 1])) cropSize = Integer.parseInt(args[++i]);
+                    break;
+                case "-ar":
+                case "-augmentRotate":
+                    augment = true;
+                    if (i + 2 < args.length) {
+                        if (isDouble(args[i + 1]))
+                            augmentAngleBounds = Double.parseDouble(args[++i]);
+                        if (isInt(args[i + 1]))
+                            augmentSteps = Integer.parseInt(args[++i]);
+                    }
                     break;
                 case "-b":
                 case "-balance":
@@ -53,6 +67,10 @@ public class ImageParser {
             core.crop(cropSize);
         }
 
+        if (augment) {
+            core.augment(augmentAngleBounds, augmentSteps);
+        }
+
         switch (removalType) {
             case 1:
                 core.removeUnmarked();
@@ -70,6 +88,16 @@ public class ImageParser {
     private static boolean isInt(String s) {
         try {
             Integer.parseInt(s);
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean isDouble(String s) {
+        try {
+            Double.parseDouble(s);
             return true;
         }
         catch (Exception e) {

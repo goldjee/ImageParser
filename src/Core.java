@@ -1,3 +1,4 @@
+import processors.Augmentor;
 import processors.Balancer;
 import processors.Cropper;
 import processors.classes.YoloPair;
@@ -49,6 +50,34 @@ public class Core {
         es.shutdown();
 
         System.out.println("Cropping done");
+    }
+
+    public void augment(double angleBounds, int steps) {
+        System.out.println("Augmentation started");
+        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
+
+        if (pairs.size() == 0) {
+            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+        }
+
+        monitor.setCntAll(pairs.size());
+
+        // pooling threads ensuring not to burn the machine
+        ExecutorService es = Executors.newFixedThreadPool(8);
+        List<Thread> augmentors = new ArrayList<>(cntAll);
+        for (YoloPair pair : pairs) {
+            Augmentor a = new Augmentor(pair, angleBounds, steps, monitor);
+            Thread t = new Thread(a);
+            t.setDaemon(true);
+            augmentors.add(t);
+
+            es.submit(t);
+        }
+        // wait for recent task to finish
+        waitTasks();
+        es.shutdown();
+
+        System.out.println("Augmentation done");
     }
 
     public void balance() {
