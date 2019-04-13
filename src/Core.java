@@ -22,8 +22,8 @@ public class Core {
         cntAll = 0;
 
     public Core() {
-        fileIO = new FileIO();
-        pairHandler = new PairHandler(fileIO);
+        fileIO = FileIO.getInstance();
+        pairHandler = new PairHandler();
         monitor = new ProgressMonitor();
     }
 

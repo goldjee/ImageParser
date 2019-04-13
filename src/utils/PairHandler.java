@@ -19,8 +19,8 @@ public class PairHandler {
             FILTER_MARKED_NONEMPTY = 2, // +   +
             FILTER_UNMARKED = 3;        // -   ?
 
-    public PairHandler(FileIO fileIO) {
-        this.fileIO = fileIO;
+    public PairHandler() {
+        this.fileIO = FileIO.getInstance();
     }
 
     public List<MarkedImage> getPairs(String inputDir) {

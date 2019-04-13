@@ -21,14 +21,29 @@ import java.util.List;
  * Created by Ins on 16.03.2019.
  */
 public class FileIO {
+    private static volatile FileIO instance;
+
     public static final String SEPARATOR = FileSystems.getDefault().getSeparator();
 
     public static final String BASE_DIR = System.getProperty("user.dir") + SEPARATOR + "img";
     public static final String REMOVED_DIR = System.getProperty("user.dir") + SEPARATOR + "img" + SEPARATOR + "processed" + SEPARATOR + "removed";
     public static final String PROCESSED_DIR = System.getProperty("user.dir") + SEPARATOR + "img" + SEPARATOR + "processed";
 
-    public FileIO() {
+    private FileIO() {
 
+    }
+
+    public static FileIO getInstance() {
+        FileIO localInstance = instance;
+        if (instance == null) {
+            synchronized (FileIO.class) {
+                localInstance = instance;
+                if (localInstance == null)
+                    instance = localInstance = new FileIO();
+            }
+        }
+
+        return localInstance;
     }
 
     public List<File> list(String dirName) {
