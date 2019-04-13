@@ -6,7 +6,9 @@ Preserves your original dataset. Output dir is img/processed/.
 Cropping converts values in your .txt files to match new image sizes.  
 
 # Command line arguments
-*-c* or *-crop* - crops images. Default size is 320x320  
-*-cl* or *-clean* - cleans output directories before any operations  
-*-b* or *-balance* - balances dataset. Default ratio is 1:1  
-*-re* or *-removeEmpty* - overrides *-b* anl leaves only images with objects present  
+|Argument|Synonym|Description|
+|--------|-------|-----------|
+|*-crop*|*-c*|Crops images. Default size is 320x320. Anyway, you can specify output size like this: *-c 416*|
+|*-clean*|*-cl*|Cleans output directories before any operations|
+|*-balance*|*-b*|Balances dataset. Default ratio is 1:1|
+|*-removeEmpty*|*-re*|Overrides *-b* anl leaves only images with objects present|
