@@ -27,46 +27,33 @@ public class Core {
         monitor = new ProgressMonitor();
     }
 
-    public void crop(int size, int type) {
-        if ((type == 1 || type == 2) && size > 0) {
-            String cropType = "undefined";
-            switch (type) {
-                case 1:
-                    cropType = "lossy";
-                    break;
-                case 2:
-                    cropType = "lossless";
-                    break;
-            }
+    public void crop(int size) {
+        System.out.println("Cropping started");
+        List<YoloPair> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
 
-            System.out.println("Cropping started [" + cropType + "]");
-            List<YoloPair> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+        monitor.setCntAll(pairs.size());
 
-            monitor.setCntAll(pairs.size());
+        // pooling threads ensuring not to burn the machine
+        ExecutorService es = Executors.newFixedThreadPool(8);
+        List<Thread> croppers = new ArrayList<>(cntAll);
+        for (YoloPair pair : pairs) {
+            Cropper c = new Cropper(pair, size, monitor);
+            Thread t = new Thread(c);
+            t.setDaemon(true);
+            croppers.add(t);
 
-            // pooling threads ensurin not to burn the machine
-            ExecutorService es = Executors.newFixedThreadPool(8);
-            List<Thread> croppers = new ArrayList<>(cntAll);
-            for (YoloPair pair : pairs) {
-                Cropper c = new Cropper(pair, type, size, fileIO, monitor);
-                Thread t = new Thread(c);
-                t.setDaemon(true);
-                croppers.add(t);
-//            t.start();
-
-                es.submit(t);
-            }
-            // wait for recent task to finish
-            waitTasks();
-            es.shutdown();
-
-            System.out.println("Cropping done");
+            es.submit(t);
         }
+        // wait for recent task to finish
+        waitTasks();
+        es.shutdown();
+
+        System.out.println("Cropping done");
     }
 
     public void balance() {
         System.out.println("Balancing started");
-        Balancer balancer = new Balancer(fileIO, monitor);
+        Balancer balancer = new Balancer(monitor);
 
         // we'll try to balance dataset in processed dir
         List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);

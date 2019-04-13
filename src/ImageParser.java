@@ -10,10 +10,6 @@ public class ImageParser {
                 crop = false,
                 cleanup = false;
 
-        int cropType = 0;
-        // 0 - no crop
-        // 1 - regular crop
-        // 2 - lossless crop
         int cropSize = 320;
 
         int removalType = 0;
@@ -25,13 +21,8 @@ public class ImageParser {
             switch (args[i]) {
                 case "-c":
                 case "-crop":
-                    cropType = 1;
-                    if (isInt(args[i + 1])) cropSize = Integer.parseInt(args[++i]);
-                    break;
-                case "-lc":
-                case "-losslessCrop":
-                    cropType = 2;
-                    if (isInt(args[i + 1])) cropSize = Integer.parseInt(args[++i]);
+                    crop = true;
+                    if (i + 1 < args.length && isInt(args[i + 1])) cropSize = Integer.parseInt(args[++i]);
                     break;
                 case "-b":
                 case "-balance":
@@ -58,12 +49,8 @@ public class ImageParser {
         if (cleanup)
             core.cleanup();
 
-        switch (cropType) {
-            case 1:
-                core.crop(cropSize, cropType);
-                break;
-            case 2:
-                core.crop(cropSize, cropType);
+        if (crop){
+            core.crop(cropSize);
         }
 
         switch (removalType) {

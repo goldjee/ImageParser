@@ -19,8 +19,8 @@ public class Balancer {
     private final FileIO fileIO;
     private final ProgressMonitor monitor;
 
-    public Balancer(FileIO fileIO, ProgressMonitor monitor) {
-        this.fileIO = fileIO;
+    public Balancer(ProgressMonitor monitor) {
+        this.fileIO = FileIO.getInstance();
         this.monitor = monitor;
     }
 
