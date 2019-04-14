@@ -146,14 +146,32 @@ public class MarkedImage {
     // rotates image preserving marks
     public MarkedImage rotate(double angle) {
         angle = Math.toRadians(angle);
-        BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
-
         AffineTransform tx = AffineTransform.getRotateInstance(angle, img.getWidth() / 2, img.getHeight() / 2);
-//        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BICUBIC);
 
+        MarkedImage rotated = applyAffineTransformation(tx);
+        return rotated;
+    }
+
+    // flips image preserving marks
+    // direction:
+    // 0 - vertical
+    // 1 - horizontal
+    public MarkedImage flip(int direction) {
+        AffineTransform tx;
+
+        if (direction == 0)
+            tx = AffineTransform.getScaleInstance(1, -1);
+        else if (direction == 1)
+            tx = AffineTransform.getScaleInstance(-1, 1);
+        else return this;
+
+        return applyAffineTransformation(tx);
+    }
+
+    private MarkedImage applyAffineTransformation(AffineTransform tx) {
+        BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
         Graphics2D g2d = newImage.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-//        g2d.drawImage(op.filter(img, newImage), tx, null);
         g2d.drawImage(img, tx, null);
         g2d.dispose();
 

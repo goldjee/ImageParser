@@ -19,15 +19,27 @@ public class Augmentor implements Runnable {
     private final ProgressMonitor monitor;
 
     private YoloPair pair = null;
-    double angleBounds;
-    int steps;
 
-    public Augmentor(YoloPair pair, double angleBounds, int steps, ProgressMonitor monitor) {
+    private boolean rotate = false;
+    private double angleBounds;
+    private int steps;
+
+    private boolean flip = false;
+
+    public Augmentor(YoloPair pair, ProgressMonitor monitor) {
         this.pair = pair;
-        this.angleBounds = angleBounds;
-        this.steps = steps;
         this.fileIO = FileIO.getInstance();
         this.monitor = monitor;
+    }
+
+    public void setRotate(double angleBounds, int steps) {
+        this.rotate = true;
+        this.angleBounds = angleBounds;
+        this.steps = steps;
+    }
+
+    public void setFlip() {
+        this.flip = true;
     }
 
     @Override
@@ -43,11 +55,19 @@ public class Augmentor implements Runnable {
         // we will augment only images containing objects
         if (source.getObjects().size() > 0) {
             // rotational augmentations
-            double step = 2 * angleBounds / steps;
-            double angle = (-1) * angleBounds;
-            for (int i = 0; i < steps; i++) {
-                augmented.add(source.rotate(angle));
-                angle += step;
+            if (rotate) {
+                double step = 2 * angleBounds / steps;
+                double angle = (-1) * angleBounds;
+                for (int i = 0; i < steps; i++) {
+                    augmented.add(source.rotate(angle));
+                    angle += step;
+                }
+            }
+
+            // flip augmentations
+            if (flip) {
+                augmented.add(source.flip(0));
+                augmented.add(source.flip(1));
             }
         }
 

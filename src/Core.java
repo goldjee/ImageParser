@@ -52,7 +52,7 @@ public class Core {
         System.out.println("Cropping done");
     }
 
-    public void augment(double angleBounds, int steps) {
+    public void augment(boolean augmentRotate, double angleBounds, int steps, boolean augmentFlip) {
         System.out.println("Augmentation started");
         List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
 
@@ -66,7 +66,12 @@ public class Core {
         ExecutorService es = Executors.newFixedThreadPool(8);
         List<Thread> augmentors = new ArrayList<>(cntAll);
         for (YoloPair pair : pairs) {
-            Augmentor a = new Augmentor(pair, angleBounds, steps, monitor);
+            Augmentor a = new Augmentor(pair, monitor);
+            if (augmentRotate)
+                a.setRotate(angleBounds, steps);
+            if (augmentFlip)
+                a.setFlip();
+
             Thread t = new Thread(a);
             t.setDaemon(true);
             augmentors.add(t);

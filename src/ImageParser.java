@@ -8,7 +8,8 @@ public class ImageParser {
 
         boolean balance = false,
                 crop = false,
-                augment = false,
+                augmentRotate = false,
+                augmentFlip = false,
                 cleanup = false;
 
         int cropSize = 320;
@@ -30,7 +31,7 @@ public class ImageParser {
                     break;
                 case "-ar":
                 case "-augmentRotate":
-                    augment = true;
+                    augmentRotate = true;
                     if (i + 2 < args.length) {
                         if (isDouble(args[i + 1]))
                             augmentAngleBounds = Double.parseDouble(args[++i]);
@@ -38,6 +39,9 @@ public class ImageParser {
                             augmentSteps = Integer.parseInt(args[++i]);
                     }
                     break;
+                case "-af":
+                case "-augmentFlip":
+                    augmentFlip = true;
                 case "-b":
                 case "-balance":
                     balance = true;
@@ -67,8 +71,8 @@ public class ImageParser {
             core.crop(cropSize);
         }
 
-        if (augment) {
-            core.augment(augmentAngleBounds, augmentSteps);
+        if (augmentRotate || augmentFlip) {
+            core.augment(augmentRotate, augmentAngleBounds, augmentSteps, augmentFlip);
         }
 
         switch (removalType) {
