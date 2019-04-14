@@ -165,6 +165,17 @@ public class MarkedImage {
         return applyAffineTransformation(tx);
     }
 
+    public MarkedImage grayscale() {
+        BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics g = newImage.getGraphics();
+        g.drawImage(img, 0, 0, null);
+        g.dispose();
+
+        List<MarkedObject> newObjects = new ArrayList<>(objects);
+
+        return new MarkedImage(newImage, newObjects);
+    }
+
     private MarkedImage applyAffineTransformation(AffineTransform tx) {
         BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
         Graphics2D g2d = newImage.createGraphics();

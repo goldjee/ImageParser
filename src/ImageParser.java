@@ -10,6 +10,7 @@ public class ImageParser {
                 crop = false,
                 augmentRotate = false,
                 augmentFlip = false,
+                augmentGrayscale = false,
                 cleanup = false;
 
         int cropSize = 320;
@@ -41,7 +42,13 @@ public class ImageParser {
                     break;
                 case "-af":
                 case "-augmentFlip":
-                    augmentFlip = true;
+                    //TODO: investigate why flipping results in a black picture
+//                    augmentFlip = true;
+                    break;
+                case "-ag":
+                case "-augmentGrayscale":
+                    augmentGrayscale = true;
+                    break;
                 case "-b":
                 case "-balance":
                     balance = true;
@@ -71,8 +78,8 @@ public class ImageParser {
             core.crop(cropSize);
         }
 
-        if (augmentRotate || augmentFlip) {
-            core.augment(augmentRotate, augmentAngleBounds, augmentSteps, augmentFlip);
+        if (augmentRotate || augmentFlip || augmentGrayscale) {
+            core.augment(augmentRotate, augmentAngleBounds, augmentSteps, augmentFlip, augmentGrayscale);
         }
 
         switch (removalType) {

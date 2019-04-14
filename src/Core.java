@@ -46,7 +46,7 @@ public class Core {
         System.out.println("Cropping done");
     }
 
-    public void augment(boolean augmentRotate, double angleBounds, int steps, boolean augmentFlip) {
+    public void augment(boolean augmentRotate, double angleBounds, int steps, boolean augmentFlip, boolean augmentGrayscale) {
         System.out.println("Augmentation started");
         List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
 
@@ -64,6 +64,8 @@ public class Core {
                 a.setRotate(angleBounds, steps);
             if (augmentFlip)
                 a.setFlip();
+            if (augmentGrayscale)
+                a.setGrayscale();
 
             Thread t = new Thread(a);
             t.setDaemon(true);

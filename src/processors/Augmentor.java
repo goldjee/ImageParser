@@ -26,6 +26,8 @@ public class Augmentor implements Runnable {
 
     private boolean flip = false;
 
+    private boolean grayscale = false;
+
     public Augmentor(YoloPair pair, ProgressMonitor monitor) {
         this.pair = pair;
         this.fileIO = FileIO.getInstance();
@@ -42,6 +44,10 @@ public class Augmentor implements Runnable {
         this.flip = true;
     }
 
+    public void setGrayscale() {
+        this.grayscale = true;
+    }
+
     @Override
     public void run() {
         augment(pair);
@@ -50,42 +56,63 @@ public class Augmentor implements Runnable {
 
     private void augment(YoloPair pair) {
         MarkedImage source = new MarkedImage(pair);
-        List<MarkedImage> augmented = new ArrayList<>(steps);
 
         // we will augment only images containing objects
         if (source.getObjects().size() > 0) {
+            List<MarkedImage> augmented = new ArrayList<>(steps);
+            List<MarkedImage> augmentationStep = new ArrayList<>();
+
             // rotational augmentations
             if (rotate) {
                 double step = 2 * angleBounds / steps;
                 double angle = (-1) * angleBounds;
                 for (int i = 0; i < steps; i++) {
-                    augmented.add(source.rotate(angle));
+                    augmentationStep.add(source.rotate(angle));
                     angle += step;
                 }
             }
+            augmented.addAll(augmentationStep);
 
+            augmentationStep.clear();
             // flip augmentations
             if (flip) {
-                augmented.add(source.flip(0));
-                augmented.add(source.flip(1));
+                for (MarkedImage aug : augmented) {
+                    augmentationStep.add(aug.flip(0));
+                    augmentationStep.add(aug.flip(1));
+                }
+
+                augmentationStep.add(source.flip(0));
+                augmentationStep.add(source.flip(1));
             }
-        }
+            augmented.addAll(augmentationStep);
 
-        if (augmented.size() > 0) {
-            for (int i = 0; i < augmented.size(); i++) {
-                MarkedImage markedImage = augmented.get(i);
+            augmentationStep.clear();
+            if (grayscale) {
+                for (MarkedImage aug : augmented) {
+                    augmentationStep.add(aug.grayscale());
+                    augmentationStep.add(aug.grayscale());
+                }
 
-                Region region = new Region(markedImage.getObjects(), new Rectangle(markedImage.getImg().getWidth(), markedImage.getImg().getHeight()));
+                augmentationStep.add(source.grayscale());
+            }
+            augmented.addAll(augmentationStep);
 
-                // saving data
-                List<String> coords = region.toYoloList();
+            if (augmented.size() > 0) {
+                for (int i = 0; i < augmented.size(); i++) {
+                    MarkedImage markedImage = augmented.get(i);
 
-                String basePath = pair.getTxt().getParent() + FileIO.SEPARATOR;
-                String txtPath = basePath + fileIO.getFileNameWithoutExtension(pair.getTxt()) + "_aug_" + i + "." + fileIO.getFileExtension(pair.getTxt());
-                String imgPath = basePath + fileIO.getFileNameWithoutExtension(pair.getImg()) + "_aug_" + i + "." + fileIO.getFileExtension(pair.getImg());
+                    Region region = new Region(markedImage.getObjects(), new Rectangle(markedImage.getImg().getWidth(), markedImage.getImg().getHeight()));
 
-                fileIO.saveTxt(coords, new File(txtPath));
-                fileIO.saveImg(markedImage.getImg(), new File(imgPath));
+                    // saving data
+                    List<String> coords = region.toYoloList();
+
+                    String basePath = pair.getTxt().getParent() + FileIO.SEPARATOR;
+                    String txtPath = basePath + fileIO.getFileNameWithoutExtension(pair.getTxt()) + "_aug_" + i + "." + fileIO.getFileExtension(pair.getTxt());
+                    String imgPath = basePath + fileIO.getFileNameWithoutExtension(pair.getImg()) + "_aug_" + i + "." + fileIO.getFileExtension(pair.getImg());
+
+                    fileIO.saveTxt(coords, new File(txtPath));
+                    fileIO.saveImg(markedImage.getImg(), new File(imgPath));
+                }
             }
         }
     }
