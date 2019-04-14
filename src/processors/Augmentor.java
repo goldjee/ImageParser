@@ -40,11 +40,15 @@ public class Augmentor implements Runnable {
         MarkedImage source = new MarkedImage(pair);
         List<MarkedImage> augmented = new ArrayList<>(steps);
 
-        double step = 2 * angleBounds / steps;
-        double angle = (-1) * angleBounds;
-        for (int i = 0; i < steps; i++) {
-            augmented.add(source.rotate(angle));
-            angle += step;
+        // we will augment only images containing objects
+        if (source.getObjects().size() > 0) {
+            // rotational augmentations
+            double step = 2 * angleBounds / steps;
+            double angle = (-1) * angleBounds;
+            for (int i = 0; i < steps; i++) {
+                augmented.add(source.rotate(angle));
+                angle += step;
+            }
         }
 
         if (augmented.size() > 0) {
