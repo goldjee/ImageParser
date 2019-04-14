@@ -83,8 +83,7 @@ public class MarkedImage {
             }
 
             // saving data
-            for (int i = 0; i < regions.size(); i++) {
-                Region region = regions.get(i);
+            for (Region region : regions) {
                 BufferedImage croppedImage = img.getSubimage(region.tl().x, region.tl().y, region.width(), region.height());
                 markedImages.add(new MarkedImage(croppedImage, region));
             }
@@ -124,7 +123,6 @@ public class MarkedImage {
         int newW = img.getWidth(),
             newH = img.getHeight();
 
-        BufferedImage newImg;
         if (img.getWidth() <= img.getHeight() && img.getWidth() < minSize) {
             newW = minSize;
             newH = (int) ((double) newW / aspectRatio);
@@ -134,10 +132,10 @@ public class MarkedImage {
             newW = (int) ((double) newH * aspectRatio);
         }
 
-        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        Image newImg = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage resized = new BufferedImage(newW, newH, img.getType());
         Graphics2D g2d = resized.createGraphics();
-        g2d.drawImage(tmp, 0, 0, null);
+        g2d.drawImage(newImg, 0, 0, null);
         g2d.dispose();
 
         img = resized;
@@ -148,8 +146,7 @@ public class MarkedImage {
         angle = Math.toRadians(angle);
         AffineTransform tx = AffineTransform.getRotateInstance(angle, img.getWidth() / 2, img.getHeight() / 2);
 
-        MarkedImage rotated = applyAffineTransformation(tx);
-        return rotated;
+        return applyAffineTransformation(tx);
     }
 
     // flips image preserving marks

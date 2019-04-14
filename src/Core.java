@@ -6,7 +6,6 @@ import utils.FileIO;
 import utils.PairHandler;
 import utils.ProgressMonitor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,9 +18,6 @@ public class Core {
     private final PairHandler pairHandler;
     private final ProgressMonitor monitor;
 
-    private volatile int cntDone = 0,
-        cntAll = 0;
-
     public Core() {
         fileIO = FileIO.getInstance();
         pairHandler = new PairHandler();
@@ -30,18 +26,16 @@ public class Core {
 
     public void crop(int size) {
         System.out.println("Cropping started");
-        List<YoloPair> pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+        List<YoloPair> pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
 
         monitor.setCntAll(pairs.size());
 
         // pooling threads ensuring not to burn the machine
         ExecutorService es = Executors.newFixedThreadPool(8);
-        List<Thread> croppers = new ArrayList<>(cntAll);
         for (YoloPair pair : pairs) {
             Cropper c = new Cropper(pair, size, monitor);
             Thread t = new Thread(c);
             t.setDaemon(true);
-            croppers.add(t);
 
             es.submit(t);
         }
@@ -54,17 +48,16 @@ public class Core {
 
     public void augment(boolean augmentRotate, double angleBounds, int steps, boolean augmentFlip) {
         System.out.println("Augmentation started");
-        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
+        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
 
         if (pairs.size() == 0) {
-            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
         }
 
         monitor.setCntAll(pairs.size());
 
         // pooling threads ensuring not to burn the machine
         ExecutorService es = Executors.newFixedThreadPool(8);
-        List<Thread> augmentors = new ArrayList<>(cntAll);
         for (YoloPair pair : pairs) {
             Augmentor a = new Augmentor(pair, monitor);
             if (augmentRotate)
@@ -74,7 +67,6 @@ public class Core {
 
             Thread t = new Thread(a);
             t.setDaemon(true);
-            augmentors.add(t);
 
             es.submit(t);
         }
@@ -90,14 +82,14 @@ public class Core {
         Balancer balancer = new Balancer(monitor);
 
         // we'll try to balance dataset in processed dir
-        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
+        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
 
         if (pairs.size() > 0) {
             balancer.balance(pairs, false);
         }
         else {
             // if it's empty, okay. we'll try base dir
-            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
             // and toProcessed results to output btw
             balancer.balance(pairs, true);
         }
@@ -109,7 +101,7 @@ public class Core {
 
     public void removeEmpty() {
         System.out.println("Empty removal started");
-        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
+        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
 
         // if there are empty pairs in processed dir, we will remove them
         if (pairs.size() > 0) {
@@ -125,7 +117,7 @@ public class Core {
         }
         // or we can seek input dir and move marked to processed
         else {
-            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED_NONEMPTY);
+            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED_NONEMPTY);
 
             if (pairs.size() > 0) {
                 monitor.setCntAll(pairs.size());
@@ -146,7 +138,7 @@ public class Core {
 
     public void removeUnmarked() {
         System.out.println("Unmarked removal started");
-        List<YoloPair> pairs = pairHandler.getPairs(fileIO.PROCESSED_DIR, pairHandler.FILTER_UNMARKED);
+        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_UNMARKED);
 
         // if there are unmarked pairs in processed dir, we will remove them
         if (pairs.size() > 0) {
@@ -162,7 +154,7 @@ public class Core {
         }
         // or we can seek input dir and move marked to processed
         else {
-            pairs = pairHandler.getPairs(fileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
 
             if (pairs.size() > 0) {
                 monitor.setCntAll(pairs.size());
@@ -184,8 +176,8 @@ public class Core {
     public void cleanup() {
         System.out.println("Cleanup started");
 
-        fileIO.clean(fileIO.PROCESSED_DIR);
-        fileIO.clean(fileIO.REMOVED_DIR);
+        fileIO.clean(FileIO.PROCESSED_DIR);
+        fileIO.clean(FileIO.REMOVED_DIR);
 
         System.out.println("Cleanup done");
     }

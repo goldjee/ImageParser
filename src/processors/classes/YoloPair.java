@@ -8,7 +8,7 @@ import java.io.File;
 public class YoloPair {
     // this is essentially a pair of image and corresponding .txt in YOLO format
 
-    private File img = null;
+    private File img;
     private File txt = null;
 
     public YoloPair(File txt, File img) {

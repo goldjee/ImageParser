@@ -14,7 +14,7 @@ import java.util.Random;
 public class Balancer {
 
     // target object to background ratio
-    private static final float ratio = 1.0f;
+    private final float ratio = 1.0f;
 
     private final FileIO fileIO;
     private final ProgressMonitor monitor;

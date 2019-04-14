@@ -21,7 +21,7 @@ public class Cropper implements Runnable {
     private final FileIO fileIO;
     private final ProgressMonitor monitor;
 
-    private YoloPair pair = null;
+    private YoloPair pair;
 
     public Cropper(YoloPair pair, int size, ProgressMonitor monitor) {
         this.pair = pair;
@@ -49,7 +49,7 @@ public class Cropper implements Runnable {
                 // saving data
                 List<String> coords = region.toYoloList();
 
-                String basePath = pair.getTxt().getParent() + fileIO.SEPARATOR;
+                String basePath = pair.getTxt().getParent() + FileIO.SEPARATOR;
                 String txtPath = basePath + fileIO.getFileNameWithoutExtension(pair.getTxt()) + "_" + i + "." + fileIO.getFileExtension(pair.getTxt());
                 String imgPath = basePath + fileIO.getFileNameWithoutExtension(pair.getImg()) + "_" + i + "." + fileIO.getFileExtension(pair.getImg());
 

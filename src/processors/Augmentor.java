@@ -18,7 +18,7 @@ public class Augmentor implements Runnable {
     private final FileIO fileIO;
     private final ProgressMonitor monitor;
 
-    private YoloPair pair = null;
+    private YoloPair pair;
 
     private boolean rotate = false;
     private double angleBounds;
@@ -80,7 +80,7 @@ public class Augmentor implements Runnable {
                 // saving data
                 List<String> coords = region.toYoloList();
 
-                String basePath = pair.getTxt().getParent() + fileIO.SEPARATOR;
+                String basePath = pair.getTxt().getParent() + FileIO.SEPARATOR;
                 String txtPath = basePath + fileIO.getFileNameWithoutExtension(pair.getTxt()) + "_aug_" + i + "." + fileIO.getFileExtension(pair.getTxt());
                 String imgPath = basePath + fileIO.getFileNameWithoutExtension(pair.getImg()) + "_aug_" + i + "." + fileIO.getFileExtension(pair.getImg());
 
