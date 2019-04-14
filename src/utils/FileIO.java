@@ -10,12 +10,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Created by Ins on 16.03.2019.
@@ -26,8 +24,9 @@ public class FileIO {
     public static final String SEPARATOR = FileSystems.getDefault().getSeparator();
 
     public static final String BASE_DIR = System.getProperty("user.dir") + SEPARATOR + "img";
-    public static final String REMOVED_DIR = System.getProperty("user.dir") + SEPARATOR + "img" + SEPARATOR + "processed" + SEPARATOR + "removed";
-    public static final String PROCESSED_DIR = System.getProperty("user.dir") + SEPARATOR + "img" + SEPARATOR + "processed";
+//    public static final String BASE_DIR = "D:\\APEX Legends NN training\\ImageParser" + SEPARATOR + "img";
+    public static final String REMOVED_DIR = BASE_DIR + SEPARATOR + "processed" + SEPARATOR + "removed";
+    public static final String PROCESSED_DIR = BASE_DIR + SEPARATOR + "processed";
 
     private FileIO() {
 
@@ -137,11 +136,17 @@ public class FileIO {
         List<File> files = new ArrayList<>();
 
         if (dir.exists() && dir.isDirectory()) {
-            for (File entry : dir.listFiles()) {
-                if (!entry.isDirectory())
-                    files.add(entry);
-                else if (includeSubdirs)
-                    files.addAll(list(entry, includeSubdirs));
+            try (Stream<Path> stream = Files.list(dir.toPath())) {
+                stream.forEach( entry -> {
+                            if (!entry.toFile().isDirectory())
+                                files.add(entry.toFile());
+                            else if (includeSubdirs)
+                                files.addAll(list(entry.toFile(), includeSubdirs));
+                        }
+                );
+            }
+            catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
