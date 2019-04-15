@@ -4,6 +4,7 @@ import utils.FileIO;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -186,8 +187,9 @@ public class MarkedImage {
         List<MarkedObject> newObjects = new ArrayList<>(objects.size());
 
         for (MarkedObject o : objects) {
-            Shape or = tx.createTransformedShape(o.bounds);
-            Rectangle newBounds = or.getBounds();
+            Shape shape = new RoundRectangle2D.Double(o.bounds.x, o.bounds.y, o.bounds.width, o.bounds.height, o.bounds.width / 4, o.bounds.height / 4);
+            shape = tx.createTransformedShape(shape);
+            Rectangle newBounds = shape.getBounds();
 
             // check if bounds are inside the image
             if (newBounds.x < 0) {
