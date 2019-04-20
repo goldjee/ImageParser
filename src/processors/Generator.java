@@ -72,11 +72,22 @@ public class Generator implements Runnable {
                 int y = rnd.nextInt(yTo - yFrom) + yFrom;
 
                 MarkedImage markedImage = placeObject(scaledObject, background, x, y);
-                String name = fileIO.getFileNameWithoutExtension(new File(objectUrl)) +
-                        fileIO.getFileNameWithoutExtension(new File(backgroundUrl)) +
-                        "_gen_" + (i + j);
 
-                save(markedImage, name);
+                // fool proof: if at least one of marked objects has wrong placement, we won't save the result
+                boolean valid = true;
+                for (MarkedObject markedObject : markedImage.getObjects()) {
+                    if (markedObject.bounds.width == 0 || markedObject.bounds.height == 0) {
+                        valid = false;
+                        break;
+                    }
+                }
+                if (valid) {
+                    String name = fileIO.getFileNameWithoutExtension(new File(objectUrl)) +
+                            fileIO.getFileNameWithoutExtension(new File(backgroundUrl)) +
+                            "_gen_" + (i + j);
+
+                    save(markedImage, name);
+                }
             }
         }
     }
