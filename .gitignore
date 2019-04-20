@@ -84,3 +84,4 @@ fabric.properties
 .idea/
 img/
 config.json
+lib/gson-2.8.5.jar
