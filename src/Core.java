@@ -1,11 +1,11 @@
-import processors.Augmentor;
-import processors.Balancer;
-import processors.Cropper;
+import processors.*;
 import processors.classes.YoloPair;
+import utils.Config;
 import utils.FileIO;
 import utils.PairHandler;
 import utils.ProgressMonitor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by Ins on 18.03.2019.
  */
-public class Core {
+class Core {
     private final FileIO fileIO;
     private final PairHandler pairHandler;
     private final ProgressMonitor monitor;
@@ -24,164 +24,126 @@ public class Core {
         monitor = new ProgressMonitor();
     }
 
-    public void crop(int size) {
-        System.out.println("Cropping started");
-        List<YoloPair> pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
+    public void start() {
+        try {
+            Config config = Config.getInstance();
 
-        monitor.setCntAll(pairs.size());
+            if (config.isClean()) {
+                System.out.println("Cleanup started");
+                clean(config.getCleanerSource());
+            }
 
-        // pooling threads ensuring not to burn the machine
-        ExecutorService es = Executors.newFixedThreadPool(8);
-        for (YoloPair pair : pairs) {
-            Cropper c = new Cropper(pair, size, monitor);
-            Thread t = new Thread(c);
-            t.setDaemon(true);
+            if (config.isCrop()) {
+                System.out.println("Cropping started");
+                crop(config.getCropperSource(), config.getCropperSize(), config.getCropperTarget());
+            }
 
-            es.submit(t);
+            if (config.isRotate()) {
+                System.out.println("Rotary augmentation started");
+                rotate(config.getRotatorSource(), config.getRotatorAngle(), config.getRotatorSteps(), config.getRotatorTarget());
+            }
+
+            if (config.isGrayscale()) {
+                System.out.println("Grayscaling augmentation started");
+                grayscale(config.getGrayscalerSource(), config.getGrayscalerTarget());
+            }
+
+            if (config.isGenerate()) {
+                System.out.println("Image generation started");
+                generate(config.getGeneratorBackgrounds(), config.getGeneratorObjects(), config.getGeneratorTarget());
+            }
+
+            if (config.isRemove()) {
+                System.out.println("Junk removal started");
+                remove(config.getRemoverSource(), config.getRemoverType(), config.getRemoverTarget());
+            }
+
+            if (config.isBalance()) {
+                System.out.println("Balancing started");
+                balance(config.getBalancerSource(), config.getBalancerRatio(), config.getBalancerTarget());
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-        // wait for recent task to finish
-        waitTasks();
-        es.shutdown();
-
-        System.out.println("Cropping done");
     }
 
-    public void augment(boolean augmentRotate, double angleBounds, int steps, boolean augmentFlip, boolean augmentGrayscale) {
-        System.out.println("Augmentation started");
-        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
-
-        if (pairs.size() == 0) {
-            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
-        }
-
-        monitor.setCntAll(pairs.size());
-
-        // pooling threads ensuring not to burn the machine
-        ExecutorService es = Executors.newFixedThreadPool(8);
-        for (YoloPair pair : pairs) {
-            Augmentor a = new Augmentor(pair, monitor);
-            if (augmentRotate)
-                a.setRotate(angleBounds, steps);
-            if (augmentFlip)
-                a.setFlip();
-            if (augmentGrayscale)
-                a.setGrayscale();
-
-            Thread t = new Thread(a);
-            t.setDaemon(true);
-
-            es.submit(t);
-        }
-        // wait for recent task to finish
-        waitTasks();
-        es.shutdown();
-
-        System.out.println("Augmentation done");
+    private void clean(String dirUrl) {
+        fileIO.clean(dirUrl);
     }
 
-    public void balance() {
-        System.out.println("Balancing started");
-        Balancer balancer = new Balancer(monitor);
+    private void crop(String sourceUrl, int size, String targetUrl) {
+        List<YoloPair> pairs = pairHandler.getPairs(sourceUrl, pairHandler.FILTER_MARKED);
 
-        // we'll try to balance dataset in processed dir
-        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_MARKED);
+        monitor.setCntAll(pairs.size());
+        List<Runnable> tasks = new ArrayList<>(pairs.size());
+        for (YoloPair pair : pairs) {
+            tasks.add(new Cropper(pair, size, targetUrl, monitor));
+        }
+
+        execute(tasks);
+    }
+
+    private void rotate(String sourceUrl, double angleBounds, int steps, String targetUrl) {
+        List<YoloPair> pairs = pairHandler.getPairs(sourceUrl, pairHandler.FILTER_MARKED);
+
+        monitor.setCntAll(pairs.size());
+        List<Runnable> tasks = new ArrayList<>(pairs.size());
+        for (YoloPair pair : pairs) {
+            tasks.add(new Rotator(pair, angleBounds, steps, targetUrl, monitor));
+        }
+
+        execute(tasks);
+    }
+
+    private void grayscale(String sourceUrl, String targetUrl) {
+        List<YoloPair> pairs = pairHandler.getPairs(sourceUrl, pairHandler.FILTER_MARKED);
+
+        monitor.setCntAll(pairs.size());
+        List<Runnable> tasks = new ArrayList<>(pairs.size());
+        for (YoloPair pair : pairs) {
+            tasks.add(new Grayscaler(pair, targetUrl, monitor));
+        }
+
+        execute(tasks);
+    }
+
+    private void generate(String backgroundsUrl, String objectsUrl, String targetUrl) {
+        //TODO: implement
+    }
+
+    private void balance(String sourceUrl, double ratio, String targetUrl) {
+        List<YoloPair> pairs = pairHandler.getPairs(sourceUrl, pairHandler.FILTER_MARKED);
 
         if (pairs.size() > 0) {
-            balancer.balance(pairs, false);
-        }
-        else {
-            // if it's empty, okay. we'll try base dir
-            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
-            // and toProcessed results to output btw
-            balancer.balance(pairs, true);
-        }
+            Balancer balancer = new Balancer(pairs, ratio, targetUrl, monitor);
+            balancer.balance();
 
-        waitTasks();
-
-        System.out.println("Balancing done");
+            waitTasks();
+        }
     }
 
-    public void removeEmpty() {
-        System.out.println("Empty removal started");
-        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_EMPTY);
+    private void remove(String sourceUrl, int type, String targetUrl) {
+        List<YoloPair> pairs = new ArrayList<>(0);
+        switch (type) {
+            case 1:
+                pairs = pairHandler.getPairs(sourceUrl, pairHandler.FILTER_UNMARKED);
+                break;
+            case 2:
+                pairs = pairHandler.getPairs(sourceUrl, pairHandler.FILTER_EMPTY);
+                break;
+        }
 
-        // if there are empty pairs in processed dir, we will remove them
         if (pairs.size() > 0) {
             monitor.setCntAll(pairs.size());
 
+            List<Runnable> tasks = new ArrayList<>(pairs.size());
             for (YoloPair pair : pairs) {
-                fileIO.toRemoved(pair.getImg());
-                if (pair.getTxt() != null)
-                    fileIO.toRemoved(pair.getTxt());
-
-                monitor.increment();
+                tasks.add(new Remover(pair, targetUrl, monitor));
             }
+
+            execute(tasks);
         }
-        // or we can seek input dir and move marked to processed
-        else {
-            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED_NONEMPTY);
-
-            if (pairs.size() > 0) {
-                monitor.setCntAll(pairs.size());
-
-                for (YoloPair pair : pairs) {
-                    fileIO.toProcessed(pair.getImg());
-                    if (pair.getTxt() != null)
-                        fileIO.toProcessed(pair.getTxt());
-
-                    monitor.increment();
-                }
-            }
-        }
-
-        waitTasks();
-        System.out.println("Empty removal done");
-    }
-
-    public void removeUnmarked() {
-        System.out.println("Unmarked removal started");
-        List<YoloPair> pairs = pairHandler.getPairs(FileIO.PROCESSED_DIR, pairHandler.FILTER_UNMARKED);
-
-        // if there are unmarked pairs in processed dir, we will remove them
-        if (pairs.size() > 0) {
-            monitor.setCntAll(pairs.size());
-
-            for (YoloPair pair : pairs) {
-                fileIO.toRemoved(pair.getImg());
-                if (pair.getTxt() != null)
-                    fileIO.toRemoved(pair.getTxt());
-
-                monitor.increment();
-            }
-        }
-        // or we can seek input dir and move marked to processed
-        else {
-            pairs = pairHandler.getPairs(FileIO.BASE_DIR, pairHandler.FILTER_MARKED);
-
-            if (pairs.size() > 0) {
-                monitor.setCntAll(pairs.size());
-
-                for (YoloPair pair : pairs) {
-                    fileIO.toProcessed(pair.getImg());
-                    if (pair.getTxt() != null)
-                        fileIO.toProcessed(pair.getTxt());
-
-                    monitor.increment();
-                }
-            }
-        }
-
-        waitTasks();
-        System.out.println("Unmarked removal done");
-    }
-
-    public void cleanup() {
-        System.out.println("Cleanup started");
-
-        fileIO.clean(FileIO.PROCESSED_DIR);
-        fileIO.clean(FileIO.REMOVED_DIR);
-
-        System.out.println("Cleanup done");
     }
 
     private void waitTasks() {
@@ -192,5 +154,18 @@ public class Core {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void execute(List<Runnable> runnables) {
+        // pooling threads ensuring not to burn the machine
+        ExecutorService es = Executors.newFixedThreadPool(8);
+        for (Runnable runnable : runnables) {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            es.submit(t);
+        }
+        // wait for recent task to finish
+        waitTasks();
+        es.shutdown();
     }
 }

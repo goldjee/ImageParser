@@ -23,11 +23,6 @@ public class FileIO {
 
     public static final String SEPARATOR = FileSystems.getDefault().getSeparator();
 
-    public static final String BASE_DIR = System.getProperty("user.dir") + SEPARATOR + "img";
-//    public static final String BASE_DIR = "D:\\APEX Legends NN training\\ImageParser" + SEPARATOR + "img";
-    public static final String REMOVED_DIR = BASE_DIR + SEPARATOR + "processed" + SEPARATOR + "removed";
-    public static final String PROCESSED_DIR = BASE_DIR + SEPARATOR + "processed";
-
     private FileIO() {
 
     }
@@ -45,20 +40,12 @@ public class FileIO {
         return localInstance;
     }
 
-    public List<File> list(String dirName) {
-        if (dirName != null && (dirName.equals(BASE_DIR) || dirName.equals(REMOVED_DIR) || dirName.equals(PROCESSED_DIR))) {
-            return list(new File(dirName), false);
+    public List<File> list(String dirUrl) {
+        if (dirUrl != null) {
+            return list(new File(checkDirUrl(dirUrl)), false);
         }
         else
             return new ArrayList<>();
-    }
-
-    public void toRemoved(File file) {
-        move(file, new File(REMOVED_DIR));
-    }
-
-    public void toProcessed(File file) {
-        copy(file, new File(PROCESSED_DIR));
     }
 
     public List<File> filterExtension(List<File> files, String extension, boolean match) {
@@ -93,10 +80,9 @@ public class FileIO {
         return name.substring(0, lastIndexOf);
     }
 
-    public void clean(String dirName) {
-        if (dirName != null && (dirName.equals(BASE_DIR) || dirName.equals(REMOVED_DIR) || dirName.equals(PROCESSED_DIR))) {
-            List<File> removeables = new ArrayList<>();
-            removeables.addAll(list(new File(dirName), false));
+    public void clean(String dirUrl) {
+        if (dirUrl != null) {
+            List<File> removeables = new ArrayList<>(list(new File(checkDirUrl(dirUrl)), true));
 
             for (File f : removeables) {
                 if (f.exists())
@@ -106,7 +92,16 @@ public class FileIO {
     }
 
     // basic file and dir operations
-    private void move(File file, File targetDir) {
+    private String checkDirUrl(String url) {
+        if (url != null && !url.endsWith(SEPARATOR))
+            return url + SEPARATOR;
+        else
+            return url;
+    }
+
+    public void move(File file, String targetUrl) {
+        File targetDir = new File(checkDirUrl(targetUrl));
+
         if (!targetDir.exists()) {
             targetDir.mkdir();
         }
@@ -114,19 +109,6 @@ public class FileIO {
         try {
             if (file.exists())
                 Files.move(Paths.get(file.getAbsolutePath()), Paths.get(targetDir.getAbsolutePath() + SEPARATOR + file.getName()), StandardCopyOption.REPLACE_EXISTING);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void copy(File file, File targetDir) {
-        if (!targetDir.exists()) {
-            targetDir.mkdir();
-        }
-
-        try {
-            if (file.exists())
-                Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(targetDir.getAbsolutePath() + SEPARATOR + file.getName()), StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,8 +135,10 @@ public class FileIO {
         return files;
     }
 
-    public BufferedImage readImg(File file) {
+    public BufferedImage readImg(String fileUrl) {
         BufferedImage img = null;
+
+        File file = new File(fileUrl);
         try {
             if (file.exists())
                 img = ImageIO.read(file);
@@ -165,8 +149,10 @@ public class FileIO {
         return img;
     }
 
-    public List<String> readTxt(File file) {
+    public List<String> readTxt(String fileUrl) {
         List<String> lines = new ArrayList<>();
+
+        File file = new File(fileUrl);
         try {
             if (file.exists())
                 lines.addAll(Files.readAllLines(Paths.get(file.getAbsolutePath())));
@@ -179,9 +165,9 @@ public class FileIO {
         return lines;
     }
 
-    public void saveImg(BufferedImage image, File file) {
+    public void saveImg(BufferedImage image, String fileName, String targetUrl) {
         try {
-            File out = new File(PROCESSED_DIR + SEPARATOR + file.getName());
+            File out = new File(checkDirUrl(targetUrl) + SEPARATOR + fileName);
 
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();
@@ -206,9 +192,9 @@ public class FileIO {
         }
     }
 
-    public void saveTxt(List<String> lines, File file) {
+    public void saveTxt(List<String> lines, String fileName, String targetUrl) {
         try {
-            File out = new File(PROCESSED_DIR + SEPARATOR + file.getName());
+            File out = new File(checkDirUrl(targetUrl) + SEPARATOR + fileName);
 
             if (!out.getParentFile().exists())
                 out.getParentFile().mkdirs();

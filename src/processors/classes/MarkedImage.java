@@ -28,8 +28,8 @@ public class MarkedImage {
     public MarkedImage(YoloPair pair) {
         FileIO fileIO = FileIO.getInstance();
 
-        img = fileIO.readImg(pair.getImg());
-        List<String> yoloLines = fileIO.readTxt(pair.getTxt());
+        img = fileIO.readImg(pair.getImg().getAbsolutePath());
+        List<String> yoloLines = fileIO.readTxt(pair.getTxt().getAbsolutePath());
 
         objects = new ArrayList<>(yoloLines.size());
         for (String yoloLine : yoloLines) {

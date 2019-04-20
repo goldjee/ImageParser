@@ -12,28 +12,25 @@ import java.util.Random;
  * Created by Ins on 16.03.2019.
  */
 public class Balancer {
-
     // target object to background ratio
-    private final float ratio = 1.0f;
+    private final List<YoloPair> pairs;
+    private final double ratio;
+    private final String targetUrl;
 
-    private final FileIO fileIO;
     private final ProgressMonitor monitor;
 
-    public Balancer(ProgressMonitor monitor) {
-        this.fileIO = FileIO.getInstance();
+    public Balancer(List<YoloPair> pairs, double ratio, String targetUrl, ProgressMonitor monitor) {
+        this.pairs = pairs;
+        this.ratio = ratio;
+        this.targetUrl = targetUrl;
         this.monitor = monitor;
     }
 
-    public void balance(List<YoloPair> pairs, boolean fromInput) {
+    public void balance() {
         List<YoloPair> backgrounds = new ArrayList<>();
 
-        // remains are pairs which should be preserved
-        List<YoloPair> remains = new ArrayList<>(pairs);
-        // removed are pairs pending for removal
-        List<YoloPair> removed = new ArrayList<>();
-
         int objectCnt = 0, backgroundCnt = 0;
-        for (YoloPair pair : remains) {
+        for (YoloPair pair : pairs) {
             if (pair.getTxt().length() == 0) {
                 backgroundCnt++;
                 backgrounds.add(pair);
@@ -43,40 +40,24 @@ public class Balancer {
         System.out.println("Objects: " + objectCnt);
         System.out.println("Backgrounds: " + backgroundCnt);
 
-        float ratio = (float) objectCnt / backgroundCnt;
+        double ratio = (double) objectCnt / (double) backgroundCnt;
         if (ratio < this.ratio) {
+            int toRemoveCnt = (int) ((double) objectCnt / this.ratio);
+            monitor.setCntAll(toRemoveCnt);
             Random rnd = new Random();
-            for (int i = 0; i < (int) ((float) objectCnt / this.ratio); i++) {
+            FileIO fileIO = FileIO.getInstance();
+
+            for (int i = 0; i < toRemoveCnt; i++) {
                 int idx = rnd.nextInt(backgrounds.size() - 1);
 
                 YoloPair pair = backgrounds.get(idx);
                 if (pair != null) {
-                    removed.add(pair);
-                    remains.remove(pair);
+                    fileIO.move(pair.getTxt(), targetUrl);
+                    fileIO.move(pair.getImg(), targetUrl);
+
+                    backgrounds.remove(pair);
+                    monitor.increment();
                 }
-            }
-        }
-
-        // finally perform toProcessed and move operations
-        if (fromInput) {
-            monitor.setCntAll(remains.size());
-
-            for (YoloPair pair : remains) {
-                // toProcessed to output
-                fileIO.toProcessed(pair.getTxt());
-                fileIO.toProcessed(pair.getImg());
-
-                monitor.increment();
-            }
-        }
-        else {
-            monitor.setCntAll(removed.size());
-
-            for (YoloPair pair : removed) {
-                fileIO.toRemoved(pair.getTxt());
-                fileIO.toRemoved(pair.getImg());
-
-                monitor.increment();
             }
         }
     }

@@ -1,0 +1,45 @@
+# Example configuration
+{
+  "operations": [
+    {
+      "operation": "clean",
+      "source": "./img/processed"
+    },
+    {
+      "operation": "crop",
+      "size": 608,
+      "source": "./img",
+      "target": "./img/processed"
+    },
+    {
+      "operation": "rotate",
+      "angle": 5,
+      "steps": 10,
+      "source": "./img/processed",
+      "target": "./img/processed"
+    },
+    {
+      "operation": "grayscale",
+      "source": "./img/processed",
+      "target": "./img/processed"
+    },
+    {
+      "operation": "generate",
+      "backgrounds": "./img/backgrounds",
+      "objects": "./img/objects",
+      "target": "./img/processed"
+    },
+    {
+      "operation": "balance",
+      "ratio": 1,
+      "source": "./img/processed",
+      "target": "./img/processed/removed"
+    },
+    {
+      "operation": "remove",
+      "type": "unmarked",
+      "source": "./img/processed",
+      "target": "./img/processed/removed"
+    }
+  ]
+}

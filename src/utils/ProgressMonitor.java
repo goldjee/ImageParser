@@ -13,7 +13,7 @@ public class ProgressMonitor {
         reset();
     }
 
-    public synchronized void reset() {
+    private synchronized void reset() {
         cntDone = 0;
         cntAll = 0;
     }

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by Ins on 22.03.2019.
  */
-public class MarkedObject {
+class MarkedObject {
     // it's an object. defined by object class and bounding rectangle
     // all the coordinates stored are relative to original image
 
