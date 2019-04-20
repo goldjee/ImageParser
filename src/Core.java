@@ -5,6 +5,7 @@ import utils.FileIO;
 import utils.PairHandler;
 import utils.ProgressMonitor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -48,9 +49,20 @@ class Core {
                 grayscale(config.getGrayscalerSource(), config.getGrayscalerTarget());
             }
 
+            if (config.isGenerateCrop()) {
+                System.out.println("Image generation (crop objects) started");
+                generateCrop(config.getGeneratorCropSource(), config.getGeneratorCropTarget());
+            }
+
             if (config.isGenerate()) {
                 System.out.println("Image generation started");
-                generate(config.getGeneratorBackgrounds(), config.getGeneratorObjects(), config.getGeneratorTarget());
+                generate(config.getGeneratorObjects(),
+                        config.getGeneratorBackgrounds(),
+                        config.getGeneratorScaleFrom(),
+                        config.getGeneratorScaleTo(),
+                        config.getGeneratorSteps(),
+                        config.getGeneratorVisiblePart(),
+                        config.getGeneratorTarget());
             }
 
             if (config.isRemove()) {
@@ -108,8 +120,39 @@ class Core {
         execute(tasks);
     }
 
-    private void generate(String backgroundsUrl, String objectsUrl, String targetUrl) {
-        //TODO: implement
+    private void generateCrop(String sourceUrl, String targetUrl) {
+        List<File> files = fileIO.filterExtension(fileIO.list(sourceUrl), "bmp", true);
+        files.addAll(fileIO.filterExtension(fileIO.list(sourceUrl), "jpg", true));
+        files.addAll(fileIO.filterExtension(fileIO.list(sourceUrl), "png", true));
+
+        monitor.setCntAll(files.size());
+        List<Runnable> tasks = new ArrayList<>(files.size());
+        for (File file : files) {
+            tasks.add(new GeneratorCropper(file.getAbsolutePath(), targetUrl, monitor));
+        }
+
+        execute(tasks);
+    }
+
+    private void generate(String objectsUrl, String backgroundsUrl, double scaleFrom, double scaleTo, int steps, double visiblePart, String targetUrl) {
+        List<File> objects = fileIO.filterExtension(fileIO.list(objectsUrl), "bmp", true);
+        objects.addAll(fileIO.filterExtension(fileIO.list(objectsUrl), "jpg", true));
+        objects.addAll(fileIO.filterExtension(fileIO.list(objectsUrl), "png", true));
+
+        List<File> backgrounds = fileIO.filterExtension(fileIO.list(backgroundsUrl), "bmp", true);
+        backgrounds.addAll(fileIO.filterExtension(fileIO.list(backgroundsUrl), "jpg", true));
+        backgrounds.addAll(fileIO.filterExtension(fileIO.list(backgroundsUrl), "png", true));
+
+        List<String> backgroundUrls = new ArrayList<>(backgrounds.size());
+        backgrounds.forEach(b -> backgroundUrls.add(b.getAbsolutePath()));
+
+        monitor.setCntAll(objects.size());
+        List<Runnable> tasks = new ArrayList<>(objects.size());
+        for (File object : objects) {
+            tasks.add(new Generator(object.getAbsolutePath(), backgroundUrls, scaleFrom, scaleTo, steps, visiblePart, targetUrl, monitor));
+        }
+
+        execute(tasks);
     }
 
     private void balance(String sourceUrl, double ratio, String targetUrl) {

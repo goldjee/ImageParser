@@ -37,7 +37,7 @@ public class MarkedImage {
         }
     }
 
-    private MarkedImage(BufferedImage img, Region region) {
+    public MarkedImage(BufferedImage img, Region region) {
         this.img = img;
 
         objects = new ArrayList<>(region.markedObjects.size());

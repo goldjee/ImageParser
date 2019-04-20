@@ -73,8 +73,36 @@ public class Config {
         return grayscalerTarget;
     }
 
+    public boolean isGenerateCrop() {
+        return generateCrop;
+    }
+
+    public String getGeneratorCropSource() {
+        return generatorCropSource;
+    }
+
+    public String getGeneratorCropTarget() {
+        return generatorCropTarget;
+    }
+
     public boolean isGenerate() {
         return generate;
+    }
+
+    public double getGeneratorScaleFrom() {
+        return generatorScaleFrom;
+    }
+
+    public double getGeneratorScaleTo() {
+        return generatorScaleTo;
+    }
+
+    public int getGeneratorSteps() {
+        return generatorSteps;
+    }
+
+    public double getGeneratorVisiblePart() {
+        return generatorVisiblePart;
     }
 
     public String getGeneratorBackgrounds() {
@@ -146,8 +174,17 @@ public class Config {
     private String grayscalerSource = "img" + FileIO.SEPARATOR + "processed";
     private String grayscalerTarget = "img" + FileIO.SEPARATOR + "processed";
 
+    // generator cropper (crops images with transparent backgrounds to size of visible image)
+    private boolean generateCrop = false;
+    private String generatorCropSource = "img" + FileIO.SEPARATOR + "objects";
+    private String generatorCropTarget = "img" + FileIO.SEPARATOR + "processed";
+
     // generator
     private boolean generate = false;
+    private double generatorScaleFrom = 0.2;
+    private double generatorScaleTo = 1.5;
+    private int generatorSteps = 10;
+    private double generatorVisiblePart = 0.3;
     private String generatorBackgrounds = "img" + FileIO.SEPARATOR + "backgrounds";
     private String generatorObjects = "img" + FileIO.SEPARATOR + "objects";
     private String generatorTarget = "img" + FileIO.SEPARATOR + "processed";
@@ -242,9 +279,20 @@ public class Config {
                                 grayscalerTarget = operationJson.get("target").getAsString();
                             }
                             break;
+                        case "generateCrop":
+                            if (operationJson.has("source") && operationJson.has("target")) {
+                                generateCrop = true;
+                                generatorCropSource = operationJson.get("source").getAsString();
+                                generatorCropTarget = operationJson.get("target").getAsString();
+                            }
+                            break;
                         case "generate":
                             if (operationJson.has("backgrounds") && operationJson.has("objects") && operationJson.has("target")) {
                                 generate = true;
+                                if (operationJson.has("scaleFrom")) generatorScaleFrom = operationJson.get("scaleFrom").getAsDouble();
+                                if (operationJson.has("scaleTo")) generatorScaleTo = operationJson.get("scaleTo").getAsDouble();
+                                if (operationJson.has("steps")) generatorSteps = operationJson.get("steps").getAsInt();
+                                if (operationJson.has("visiblePart")) generatorVisiblePart = operationJson.get("visiblePart").getAsDouble();
                                 generatorBackgrounds = operationJson.get("backgrounds").getAsString();
                                 generatorObjects = operationJson.get("objects").getAsString();
                                 grayscalerTarget = operationJson.get("target").getAsString();

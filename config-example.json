@@ -24,9 +24,19 @@
       "target": "./img/processed"
     },
     {
-      "operation": "generate",
+      "operation": "generateCrop",
       "backgrounds": "./img/backgrounds",
-      "objects": "./img/objects",
+      "source": "./img/objects",
+      "target": "./img/objects_cropped"
+    },
+    {
+      "operation": "generate",
+      "scaleFrom": 0.2,
+      "scaleTo": 1.5,
+      "visiblePart": 0.3,
+      "steps": 10,
+      "objects": "./img/objects_cropped",
+      "backgrounds": "./img/backgrounds",
       "target": "./img/processed"
     },
     {
