@@ -295,15 +295,15 @@ public class Config {
                                 if (operationJson.has("visiblePart")) generatorVisiblePart = operationJson.get("visiblePart").getAsDouble();
                                 generatorBackgrounds = operationJson.get("backgrounds").getAsString();
                                 generatorObjects = operationJson.get("objects").getAsString();
-                                grayscalerTarget = operationJson.get("target").getAsString();
+                                generatorTarget = operationJson.get("target").getAsString();
                             }
                             break;
                         case "balance":
                             if (operationJson.has("source") && operationJson.has("target")) {
                                 balance = true;
                                 if (operationJson.has("balancerRatio")) balancerRatio = operationJson.get("balancerRatio").getAsDouble();
-                                grayscalerSource = operationJson.get("source").getAsString();
-                                grayscalerTarget = operationJson.get("target").getAsString();
+                                balancerSource = operationJson.get("source").getAsString();
+                                balancerTarget = operationJson.get("target").getAsString();
                             }
                             break;
                         case "remove": {
