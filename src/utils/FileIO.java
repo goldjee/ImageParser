@@ -176,7 +176,7 @@ public class FileIO {
             if (getFileExtension(out).equals("jpg")) {
                 JPEGImageWriteParam jpegParam = new JPEGImageWriteParam(null);
                 jpegParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                jpegParam.setCompressionQuality(1f);
+                jpegParam.setCompressionQuality(.75f);
 
                 ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
                 FileImageOutputStream fileImageOutputStream = new FileImageOutputStream(out);
