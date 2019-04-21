@@ -76,7 +76,9 @@ public class Generator implements Runnable {
                 // fool proof: if at least one of marked objects has wrong placement, we won't save the result
                 boolean valid = true;
                 for (MarkedObject markedObject : markedImage.getObjects()) {
-                    if (markedObject.bounds.width == 0 || markedObject.bounds.height == 0) {
+                    if (markedObject.bounds.width == 0 || markedObject.bounds.height == 0 ||
+                            markedObject.bounds.x < 0 || markedObject.bounds.y < 0 ||
+                            markedObject.bounds.x > markedImage.getImg().getWidth() || markedObject.bounds.y > markedImage.getImg().getHeight()) {
                         valid = false;
                         break;
                     }
