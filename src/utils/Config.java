@@ -105,6 +105,18 @@ public class Config {
         return generatorVisiblePart;
     }
 
+    public int getGeneratorLimitPolicy() {
+        return generatorLimitPolicy;
+    }
+
+    public int getGeneratorLimitOption() {
+        return generatorLimitOption;
+    }
+
+    public double getGeneratorLimitValue() {
+        return generatorLimitValue;
+    }
+
     public String getGeneratorBackgrounds() {
         return generatorBackgrounds;
     }
@@ -185,6 +197,15 @@ public class Config {
     private double generatorScaleTo = 1.5;
     private int generatorSteps = 10;
     private double generatorVisiblePart = 0.3;
+    // 0 - no limit
+    // 1 - limit top
+    // 2 - limit random
+    private int generatorLimitPolicy = 0;
+    // 0 - no limit
+    // 1 - top
+    // 2 - percent
+    private int generatorLimitOption = 0;
+    private double generatorLimitValue = 0;
     private String generatorBackgrounds = "img" + FileIO.SEPARATOR + "backgrounds";
     private String generatorObjects = "img" + FileIO.SEPARATOR + "objects";
     private String generatorTarget = "img" + FileIO.SEPARATOR + "processed";
@@ -293,6 +314,39 @@ public class Config {
                                 if (operationJson.has("scaleTo")) generatorScaleTo = operationJson.get("scaleTo").getAsDouble();
                                 if (operationJson.has("steps")) generatorSteps = operationJson.get("steps").getAsInt();
                                 if (operationJson.has("visiblePart")) generatorVisiblePart = operationJson.get("visiblePart").getAsDouble();
+                                if (operationJson.has("limitPolicy")) {
+                                    switch (operationJson.get("limitPolicy").getAsString()) {
+                                        default:
+                                            generatorLimitPolicy = 0;
+                                            break;
+                                        case "top":
+                                            generatorLimitPolicy = 1;
+                                            break;
+                                        case "random":
+                                            generatorLimitPolicy = 2;
+                                    }
+                                    if (generatorLimitPolicy != 0) {
+                                        if (operationJson.has("limitOption")) {
+                                            switch (operationJson.get("limitOption").getAsString()) {
+                                                default:
+                                                    generatorLimitOption = 2;
+                                                    break;
+                                                case "top":
+                                                    generatorLimitOption = 1;
+                                                    break;
+                                                case "percent":
+                                                    generatorLimitOption = 2;
+                                                    break;
+                                            }
+                                        }
+                                        if (operationJson.has("limit")) {
+                                            generatorLimitValue = operationJson.get("limit").getAsDouble();
+                                            if (generatorLimitValue > 100 && generatorLimitOption == 2)
+                                                generatorLimitValue = 100;
+                                        }
+                                        else generatorLimitValue = 100;
+                                    }
+                                }
                                 generatorBackgrounds = operationJson.get("backgrounds").getAsString();
                                 generatorObjects = operationJson.get("objects").getAsString();
                                 generatorTarget = operationJson.get("target").getAsString();

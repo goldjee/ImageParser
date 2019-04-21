@@ -35,6 +35,11 @@
       "scaleTo": 1.5,
       "visiblePart": 0.3,
       "steps": 10,
+      # possible limit policies: top, random
+      "limitPolicy": "random",
+      # possible options: limitNumber, limitPercent
+      "limitOption": "limitPercent",
+      "limit": 50,
       "objects": "./img/objects_cropped",
       "backgrounds": "./img/backgrounds",
       "target": "./img/processed"

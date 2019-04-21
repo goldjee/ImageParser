@@ -8,6 +8,7 @@ import utils.ProgressMonitor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,6 +63,9 @@ class Core {
                         config.getGeneratorScaleTo(),
                         config.getGeneratorSteps(),
                         config.getGeneratorVisiblePart(),
+                        config.getGeneratorLimitPolicy(),
+                        config.getGeneratorLimitOption(),
+                        config.getGeneratorLimitValue(),
                         config.getGeneratorTarget());
             }
 
@@ -134,7 +138,7 @@ class Core {
         execute(tasks);
     }
 
-    private void generate(String objectsUrl, String backgroundsUrl, double scaleFrom, double scaleTo, int steps, double visiblePart, String targetUrl) {
+    private void generate(String objectsUrl, String backgroundsUrl, double scaleFrom, double scaleTo, int steps, double visiblePart, int limitPolicy, int limitOption, double limitValue, String targetUrl) {
         List<File> objects = fileIO.filterExtension(fileIO.list(objectsUrl), "bmp", true);
         objects.addAll(fileIO.filterExtension(fileIO.list(objectsUrl), "jpg", true));
         objects.addAll(fileIO.filterExtension(fileIO.list(objectsUrl), "png", true));
@@ -145,6 +149,35 @@ class Core {
 
         List<String> backgroundUrls = new ArrayList<>(backgrounds.size());
         backgrounds.forEach(b -> backgroundUrls.add(b.getAbsolutePath()));
+
+        if (limitPolicy != 0) {
+            int limit = objects.size();
+            // number
+            if (limitOption == 1) limit = (int) Math.min(limitValue, objects.size());
+            // percent
+            else if (limitOption == 2) limit = (int) Math.min((limitValue * objects.size()), objects.size());
+
+            List<File> objectsToProcess = new ArrayList<>();
+
+            // top
+            if (limitPolicy == 1) {
+                objects.stream()
+                    .limit(limit)
+                    .forEach(o -> objectsToProcess.add(o));
+            }
+            // random
+            else if (limitPolicy == 2) {
+                Random rnd = new Random();
+                for (int i = 0; i < limit; i++) {
+                    File object = objects.get(rnd.nextInt(objects.size()));
+                    if (!objectsToProcess.contains(object))
+                        objectsToProcess.add(object);
+                }
+            }
+
+            objects.clear();
+            objects.addAll(objectsToProcess);
+        }
 
         monitor.setCntAll(objects.size());
         List<Runnable> tasks = new ArrayList<>(objects.size());
