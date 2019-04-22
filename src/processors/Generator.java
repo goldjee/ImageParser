@@ -121,9 +121,7 @@ public class Generator implements Runnable {
 
         Region region = new Region(objects, new Rectangle(imageRect.x, imageRect.y, imageRect.width, imageRect.height));
 
-        MarkedImage out = new MarkedImage(img, region);
-
-        return out;
+        return new MarkedImage(img, region);
     }
 
     public static BufferedImage scale(BufferedImage img, double scale) {
