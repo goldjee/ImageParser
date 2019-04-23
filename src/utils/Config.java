@@ -331,7 +331,7 @@ public class Config {
                                                 default:
                                                     generatorLimitOption = 2;
                                                     break;
-                                                case "top":
+                                                case "random":
                                                     generatorLimitOption = 1;
                                                     break;
                                                 case "percent":

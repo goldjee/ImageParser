@@ -155,7 +155,7 @@ class Core {
             // number
             if (limitOption == 1) limit = (int) Math.min(limitValue, objects.size());
             // percent
-            else if (limitOption == 2) limit = (int) Math.min((limitValue * objects.size()), objects.size());
+            else if (limitOption == 2) limit = (int) Math.min((limitValue / 100d * objects.size()), objects.size());
 
             List<File> objectsToProcess = new ArrayList<>();
 
@@ -178,6 +178,12 @@ class Core {
             objects.clear();
             objects.addAll(objectsToProcess);
         }
+
+//        System.out.println("limit policy " + limitPolicy);
+//        System.out.println("limit option " + limitOption);
+//        System.out.println("limit value " + limitValue);
+//        System.out.println("target size " + (limitValue * objects.size()));
+//        System.out.println(objects.size());
 
         monitor.setCntAll(objects.size());
         List<Runnable> tasks = new ArrayList<>(objects.size());

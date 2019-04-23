@@ -37,8 +37,8 @@
       "steps": 10,
       # possible limit policies: top, random
       "limitPolicy": "random",
-      # possible options: limitNumber, limitPercent
-      "limitOption": "limitPercent",
+      # possible options: number, percent
+      "limitOption": "percent",
       "limit": 50,
       "objects": "./img/objects_cropped",
       "backgrounds": "./img/backgrounds",
